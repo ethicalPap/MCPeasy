@@ -856,6 +856,15 @@ async function runServeMode(projectId: string, serverPath: string): Promise<void
   app.quit();
 }
 
+// Windows identifies an app by its AppUserModelID, not its executable path. It
+// must match the `appId` in electron-builder.yml, or the taskbar treats a
+// running MCPeasy as unrelated to its own pinned shortcut (two icons) and
+// notifications lose the app icon. electron-builder's NSIS docs call for
+// setting this in main before any BrowserWindow is created — hence here, above
+// every whenReady handler, and outside the serve/normal branch so the headless
+// serve process claims the same identity.
+app.setAppUserModelId("com.mcpeasy.desktop");
+
 const serveRequest = parseServeArgs(process.argv);
 
 // A malformed serve invocation must fail loudly rather than opening a window:

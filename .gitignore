@@ -1,6 +1,9 @@
 node_modules/
 dist/
 out/
+# Packaged installers + their intermediate .7z payloads (hundreds of MB).
+# electron-builder.yml sets directories.output to this.
+release/
 coverage/
 *.tsbuildinfo
 *.log

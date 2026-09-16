@@ -13,3 +13,4 @@ allowBuilds:
   # electron's postinstall downloads the platform binary via @electron/get;
   # without approval the app cannot launch ("Electron failed to install").
   electron: true
+  electron-winstaller: set this to true or false
