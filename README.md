@@ -9,13 +9,16 @@ MCPeasy ships as a **packaged desktop app**. Install it, build a server on the
 canvas, and connect it to an MCP client from the Integrations page — no
 toolchain, no terminal, no repo checkout required.
 
-## What it looks like
+## The canvas
 
+<!-- Screenshot hidden: assets/canvas.png is not in the repo yet. To restore it,
+     save that file, then delete this line and the closing marker below.
 ![The MCPeasy canvas: a server node connected to two tool nodes, each running an HTTP request and returning JSON](assets/canvas.png)
+-->
 
 A server is a graph. The server node fans out to its tools along **Expose tool**
-links; each tool runs its chain downward — here an HTTP request, then a JSON
-reply to the model. Each node shows its own summary badges — a tool's input
+links; each tool runs its chain downward — typically an HTTP request, then a
+JSON reply to the model. Each node shows its own summary badges — a tool's input
 count and `Read`/`Write` access, an action's method and whether a target URL is
 set — ending in a health badge that reads **Ready** only when that node has no
 lint errors or warnings.
@@ -36,7 +39,10 @@ wrong and the lint rules matter.
 
 ## Test before you connect
 
+<!-- Screenshot hidden: assets/test-console.png is not in the repo yet. To restore
+     it, save that file, then delete this line and the closing marker below.
 ![The test console showing a get_example call, the raw response body, and the expanded input schema](assets/test-console.png)
+-->
 
 The test console runs the tool through the **same engine** that serves it over
 stdio and HTTP, so a result here is the result a model gets — not an
@@ -63,7 +69,10 @@ until that name matches. Start or restart the client to load the server.
 Connecting is the only action on that page that writes outside the workspace,
 which is why it asks for the same deliberate confirmation as deleting a server.
 
+<!-- Screenshot hidden: assets/claude-code.png is not in the repo yet. To restore
+     it, save that file, then delete this line and the closing marker below.
 ![Claude Code's /mcp view listing the connected server and its two tools, each marked read-only](assets/claude-code.png)
+-->
 
 Run `/mcp` in Claude Code to confirm it worked. The entry appears under a
 generated name — `mcpeasy-<project>-<server>`, built by `entryNameFor()` in

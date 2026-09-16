@@ -9,13 +9,22 @@ would render as a broken link on GitHub. Keep images here.
 | File | Shows | Referenced from |
 |---|---|---|
 | `wordmark.svg` | The animated "MCPeasy" wordmark in the app's pink→purple brand gradient. **Committed.** | README title |
-| `canvas.png` | The graph canvas: a server node fanning out to two tools via *Expose tool*, each tool running an HTTP request and returning JSON. | README "What it looks like" |
+| `canvas.png` | The graph canvas: a server node fanning out to two tools via *Expose tool*, each tool running an HTTP request and returning JSON. | README "The canvas" |
 | `test-console.png` | The test console: a tool invocation, the raw response, and the collapsible *Input schema as the model sees it*. | README "Test before you connect" |
 | `claude-code.png` | Claude Code's `/mcp` listing, showing a connected MCPeasy server and its tools with their read-only annotations. | README "Connect to Claude Code" |
 
-Use these exact filenames — the README links to them directly. The three
-screenshots are PNG; please keep them reasonably narrow (the canvas shot is
-~1300px wide, which renders without horizontal scrolling on GitHub).
+Use these exact filenames — the README links to them directly.
+
+**The three screenshots are not in the repo yet**, so their embeds are currently
+wrapped in HTML comments in the top-level README. A Markdown link to a missing
+file renders as a broken-image icon on GitHub, which looks worse than no image
+at all; commenting them out keeps the page clean until the files arrive. To
+restore one, save the PNG here and delete the two comment marker lines that
+surround its `![...]` line — the embed itself is preserved verbatim, so nothing
+needs retyping.
+
+Please keep them reasonably narrow (the canvas shot is ~1300px wide, which
+renders without horizontal scrolling on GitHub).
 
 ## About `wordmark.svg`
 
