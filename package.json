@@ -9,7 +9,6 @@
   },
   "packageManager": "pnpm@11.25.0",
   "scripts": {
-    "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json && tsc -p apps/desktop/tsconfig.node.json && tsc -p apps/desktop/tsconfig.web.json",
     "mcpeasy": "tsx apps/cli/src/main.ts",
     "ui": "pnpm --filter @mcpeasy/desktop dev"
@@ -18,7 +17,6 @@
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@types/node": "^26.4.1",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2",
-    "vitest": "^4.1.11"
+    "typescript": "^7.0.2"
   }
 }

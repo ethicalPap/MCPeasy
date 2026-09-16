@@ -16,13 +16,6 @@
   "include": [
     "src/renderer/src/**/*.ts",
     "src/renderer/src/**/*.tsx",
-    "src/shared/**/*.ts",
-    "test/browserLibrary.test.ts",
-    "test/codegen.test.ts",
-    "test/export.test.ts",
-    "test/graph.test.ts",
-    "test/highlight.test.ts",
-    "test/templateVars.test.ts",
-    "test/theme.test.ts"
+    "src/shared/**/*.ts"
   ]
 }

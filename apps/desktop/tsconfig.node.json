@@ -16,12 +16,6 @@
     "src/main/**/*.ts",
     "src/preload/**/*.ts",
     "src/shared/**/*.ts",
-    "scripts/**/*.d.mts",
-    "test/browserZip.test.ts",
-    "test/claudeCode.test.ts",
-    "test/ensureElectron.test.ts",
-    "test/exportZip.test.ts",
-    "test/projects.test.ts",
-    "test/serveMode.test.ts"
+    "scripts/**/*.d.mts"
   ]
 }

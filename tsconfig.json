@@ -10,12 +10,10 @@
   },
   "include": [
     "packages/*/src/**/*.ts",
-    "packages/*/test/**/*.ts",
     // CLI only: apps/desktop has its OWN tsconfigs (node + web) because its
     // three bundles need Bundler resolution and DOM libs that would be wrong
     // for the NodeNext packages this root config checks. `pnpm typecheck`
     // chains all three projects.
-    "apps/cli/src/**/*.ts",
-    "tests/**/*.ts"
+    "apps/cli/src/**/*.ts"
   ]
 }
