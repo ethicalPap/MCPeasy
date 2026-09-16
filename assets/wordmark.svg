@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="72" viewBox="0 0 420 72"
+     role="img" aria-label="MCPeasy">
+  <title>MCPeasy</title>
+
+  <!--
+    Animated wordmark for the top-level README.
+
+    Colours are NOT eyeballed from a screenshot: they are the app's own
+    .heading-gradient token in apps/desktop/src/renderer/src/styles.css:151,
+    `linear-gradient(90deg, hsl(340 82% 60%), hsl(273 70% 58%))`, converted to
+    the exact sRGB hex GitHub needs — hsl(340 82% 60%) = #ED457D and
+    hsl(273 70% 58%) = #9B49DF. If that token is ever retuned, retune these two
+    stops with it or the README drifts away from the running app.
+
+    Why a self-contained SVG instead of a PNG: GitHub renders a README image in
+    an img element, which SVG 2 puts in "secure animated mode" — declarative
+    animation is allowed, but scripts and EXTERNAL REFERENCES are disabled
+    (https://www.w3.org/TR/SVG2/conform.html#referencing-modes). That one rule
+    drives both the self-contained font stack and the SMIL-not-JS animation.
+  -->
+
+  <defs>
+    <!--
+      Seamless loop, and the seam is the whole difficulty here.
+
+      spreadMethod="repeat" tiles the ramp with period exactly (x2 - x1) = the
+      text width, so translating by one full period is mathematically identical
+      to translating by zero — the last frame equals the first and the loop has
+      no visible snap. (Verified numerically: max per-channel difference between
+      the t=0 and t=1 frames is 0.)
+
+      This is why the stops are pink -> purple -> pink rather than a plain two
+      stop pink -> purple. With the default spreadMethod="pad" and a two-stop
+      ramp, the ends do not agree and the wordmark jumps back to pink once per
+      cycle. Do not "simplify" this to two stops or drop spreadMethod.
+    -->
+    <linearGradient id="brand" gradientUnits="userSpaceOnUse"
+                    x1="0" y1="0" x2="420" y2="0" spreadMethod="repeat">
+      <stop offset="0%"   stop-color="#ED457D" />
+      <stop offset="50%"  stop-color="#9B49DF" />
+      <stop offset="100%" stop-color="#ED457D" />
+      <!-- One period (420 user units) per 6s: slow enough to read as a sheen
+           rather than a distraction in a document you are trying to read. -->
+      <animateTransform attributeName="gradientTransform" type="translate"
+                        from="0 0" to="420 0" dur="6s" repeatCount="indefinite" />
+    </linearGradient>
+  </defs>
+
+  <style>
+    /*
+      All system faces, deliberately. Secure animated mode blocks external
+      references, so an @font-face webfont would silently fail and fall back —
+      better to name faces that are actually installed. Segoe UI first matches
+      what the Windows app itself renders.
+    */
+    .wordmark {
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto,
+                   "Helvetica Neue", Arial, sans-serif;
+      font-size: 44px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /*
+      Respect the reader's motion preference. prefers-reduced-motion cannot stop
+      a SMIL animateTransform by itself, so instead of trying to pause it we
+      paint over it: a flat fill on the text wins over the animated gradient
+      paint server, freezing the wordmark at the ramp's midpoint. #C447AE is
+      that exact midpoint (the 50% blend of #ED457D and #9B49DF), so reduced
+      motion readers get the brand, just held still.
+    */
+    @media (prefers-reduced-motion: reduce) {
+      .wordmark { fill: #C447AE; }
+    }
+  </style>
+
+  <!--
+    textLength + lengthAdjust pin the wordmark to a known width. Without them a
+    substituted fallback face (no Segoe UI on Linux) sets wider and clips against
+    the viewBox. Pinning trades a little letterfit for never overflowing.
+  -->
+  <text class="wordmark" x="4" y="50" fill="url(#brand)"
+        textLength="404" lengthAdjust="spacingAndGlyphs">MCPeasy</text>
+</svg>

@@ -1,4 +1,4 @@
-# mcpeasy
+# ![MCPeasy](assets/wordmark.svg)
 
 Visual builder for Model Context Protocol servers. A server is designed as a
 **graph doc** (JSON) and run by one **engine** everywhere: the in-app test
