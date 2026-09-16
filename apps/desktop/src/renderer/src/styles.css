@@ -1580,8 +1580,8 @@ body {
   gap: 8px;
 }
 
-/* Current workspace — a passive indicator (not a button; switching happens via
-   File → Switch workspace…). Anchored immediately LEFT of the centered search:
+/* Current workspace — a passive indicator (not a button; changing workspaces
+   happens via File → Open workspace…). Anchored immediately LEFT of the search:
    the search sits at 50% with width min(440px, 34vw) clamped to ≥240px, so
    its left edge is 50% + max(120px, min(220px, 17vw)) from the right — this
    `right` mirrors that math plus a 12px gap. Change one, change both.

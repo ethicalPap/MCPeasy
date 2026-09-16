@@ -26,25 +26,27 @@ function MenuItem({ children, shortcut, onSelect }: MenuItemProps) {
  * and an Alt-only second menu bar would create two competing chromes. */
 export function TitlebarMenus({
   projectName,
-  onNew,
-  onOpen,
+  onNewWorkspace,
+  onOpenWorkspace,
   onSave,
-  onSwitchProject,
   onExport,
   onHelp,
 }: {
   /** Active workspace (the shell only renders inside one) — shown in the menu
    * so "Save" visibly has a destination. */
   projectName: string;
-  /** New server on the canvas (within the active workspace). */
-  onNew: () => void;
-  /** Navigates to the workspace home (which owns the server tiles) — the menu
-   * itself never loads; choosing WHICH server stays one concern. */
-  onOpen: () => void;
+  /** Leaves the active workspace for the startup chooser's "name your
+   * workspace" step. File operates at WORKSPACE granularity: servers are
+   * created and picked where they live — the builder's server dropdown and the
+   * workspace home — so the menu never competes with those for that job. */
+  onNewWorkspace: () => void;
+  /** Leaves the active workspace for the startup chooser's saved-workspace
+   * list. This absorbed the former "Switch workspace…": both opened the very
+   * same chooser step, and two labels for one destination read as two
+   * different features. */
+  onOpenWorkspace: () => void;
   /** Save into the active workspace (workspace-only I/O; no OS dialog). */
   onSave: () => void;
-  /** Back to the startup chooser (create new / open existing workspace). */
-  onSwitchProject: () => void;
   /** Export the current server as a runnable project (zip via save dialog). */
   onExport: (language: ExportLanguage) => void;
   onHelp: (view: Exclude<HelpView, null>) => void;
@@ -87,13 +89,15 @@ export function TitlebarMenus({
         </button>
         {open === "file" && (
           <div className="app-menu__popup" role="menu" aria-label="File">
-            <MenuItem shortcut={`${ctrl}N`} onSelect={() => choose(onNew)}>New server</MenuItem>
-            <MenuItem onSelect={() => choose(onOpen)}>Open server…</MenuItem>
+            {/* Both entries LEAVE the active workspace, so both route through
+                the same dirty-doc confirm in App.tsx. The ellipsis marks that:
+                neither acts immediately, each opens the chooser. */}
+            <MenuItem shortcut={`${ctrl}N`} onSelect={() => choose(onNewWorkspace)}>New workspace…</MenuItem>
+            <MenuItem onSelect={() => choose(onOpenWorkspace)}>Open workspace…</MenuItem>
             <div className="app-menu__separator" role="separator" />
             {/* Workspace-only I/O: Save writes into the active workspace —
                 the label names the destination so there is no dialog surprise. */}
             <MenuItem shortcut={`${ctrl}S`} onSelect={() => choose(onSave)}>{`Save to "${projectName}"`}</MenuItem>
-            <MenuItem onSelect={() => choose(onSwitchProject)}>Switch workspace…</MenuItem>
             <div className="app-menu__separator" role="separator" />
             {/* Flat entries instead of a nested submenu: two languages do not
                 earn hover-submenu complexity; revisit when "more" arrive. */}
@@ -186,7 +190,7 @@ export function HelpDialog({
                 <li><strong>Return</strong>: send JSON or text back to the model.</li>
               </ol>
               <p>Click a card's <strong>+</strong> connector to choose and attach its next node, then use <strong>Test console</strong> before saving.</p>
-              <p className="muted">Keyboard: Ctrl/Cmd+K searches blocks. Everything lives in a workspace: File provides New server, Open server, Save to your workspace, Switch workspace, and Export as TypeScript or Python (a runnable project as a .zip). Workspace home is your workspace's central page, reachable from the home button beside the MCPeasy name.</p>
+              <p className="muted">Keyboard: Ctrl/Cmd+K searches blocks. Everything lives in a workspace: File works on the workspace itself — New workspace (Ctrl/Cmd+N), Open workspace, Save to your workspace, and Export as TypeScript or Python (a runnable project as a .zip). Servers are created and switched where they live: the server dropdown beside the page heading, and the Workspace home — your workspace's central page, reachable from the home button beside the MCPeasy name.</p>
             </div>
           )}
           {view === "preferences" && (

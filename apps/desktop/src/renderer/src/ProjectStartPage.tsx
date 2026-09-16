@@ -12,7 +12,13 @@ import { getApi } from "./browser/api";
 // Two steps, mirroring "create new OR open existing":
 //   choose → [create: name entry] | [open: saved-workspace tiles]
 
-type Step = "choose" | "create" | "open";
+/** Exported so callers can NAME the step they want instead of passing a
+ *  boolean that only this file knows how to interpret: File offers both "New
+ *  workspace…" and "Open workspace…", which are two different steps, and a
+ *  second flag would have made an impossible "both" state representable. */
+export type ProjectStartStep = "choose" | "create" | "open";
+
+type Step = ProjectStartStep;
 
 // This page deliberately does NOT decide where the App lands afterwards. It
 // used to (create => builder, open => home), which made it a second opinion
@@ -71,9 +77,11 @@ export function ProjectStartPage({
    *  workspace's saved-server list to resolve the landing, and the freshly
    *  created/selected record already carries it. */
   onOpened: (project: ProjectInfo) => void;
-  /** File → Switch workspace… lands straight on the saved-workspace list
-   * ("open") — the user already has workspaces, so re-asking "create or
-   * open?" is noise. Back still reaches "choose" for creating a new one. */
+  /** File's workspace entries name their own step — "New workspace…" opens
+   * "create", "Open workspace…" opens "open" — because the user already
+   * answered "create or open?" by choosing the menu item, and re-asking is
+   * noise. Back still reaches "choose", so either entry can reach the other.
+   * Defaults to "choose" for a fresh launch, where nothing has been asked. */
   initialStep?: Step;
 }) {
   const [step, setStep] = useState<Step>(initialStep);

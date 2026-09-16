@@ -14,9 +14,10 @@ import type { ProjectServerEntry } from "../../../shared/ipc";
 //
 // The rule (user decision) is now: an automatic landing opens an EXISTING saved
 // server or it shows the workspace home. It never creates a server. Creating one
-// stays an explicit act — File > New, Ctrl+N, the builder dropdown's "New
-// server", and the home page's "New server" tile all still work exactly as
-// before; they are user intent, not an automatic landing.
+// stays an explicit act — the builder dropdown's "New server" and the home
+// page's "New server" tile; they are user intent, not an automatic landing.
+// (File and Ctrl+N no longer create servers at all: both now act on the
+// WORKSPACE, so the only server-creating routes are the two named above.)
 //
 // WHY IT LIVES IN shared/ AND NOT IN App.tsx: keeping the decision as a plain
 // function means the rule that governs what the user sees on launch stays

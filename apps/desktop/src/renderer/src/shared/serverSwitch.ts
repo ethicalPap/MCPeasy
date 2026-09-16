@@ -82,7 +82,7 @@ export type SwitchDecision =
  * meant navigating to another page first; a dropdown in the builder's own
  * toolbar makes it a one-click action, so the same silent discard becomes a
  * trap. This matches the app's other one-click destructive-adjacent path,
- * File → Switch workspace…, which confirms before dropping a dirty doc.
+ * File → Open workspace…, which confirms before dropping a dirty doc.
  */
 export function decideSwitch(target: ServerChoice, dirty: boolean): SwitchDecision {
   if (target.isCurrent) return { kind: "noop" };

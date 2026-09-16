@@ -11,7 +11,7 @@ import { CodePanel } from "./panels/CodePanel";
 import { ConsolePanel } from "./panels/ConsolePanel";
 import { NodePanel } from "./panels/NodePanel";
 import { ProjectsPage } from "./ProjectsPage";
-import { ProjectStartPage } from "./ProjectStartPage";
+import { ProjectStartPage, type ProjectStartStep } from "./ProjectStartPage";
 import { SecretsPage } from "./SecretsPage";
 import { ServerMenu } from "./ServerMenu";
 import { resolveStartupLanding } from "./shared/startupLanding";
@@ -92,17 +92,21 @@ export function App() {
     showNotice(res.ok ? { kind: "ok", text: `Saved to ${state.project?.name ?? "workspace"}` } : { kind: "error", text: res.error });
   };
 
-  // File → Switch workspace… lands the chooser directly on the saved-
-  // workspace list (skipping "create or open?" — the user asked to switch,
-  // so they want the existing ones). Reset to false when a workspace opens
-  // so a later fresh launch still starts on "choose".
-  const [startOnExisting, setStartOnExisting] = useState(false);
+  // Which step the startup chooser opens on. File's two workspace entries each
+  // name a destination, so the chooser skips "create or open?" — the user
+  // already answered it by picking the menu item. null means "not asked", i.e.
+  // a fresh launch, which still starts on "choose". Reset to null when a
+  // workspace opens so a later launch is unaffected by this session's choice.
+  const [startStep, setStartStep] = useState<ProjectStartStep | null>(null);
 
   // Leaving a workspace discards the in-memory doc, so a dirty one gets the
   // same friction as closing the window: confirm, default to staying.
-  const switchProject = (): void => {
+  // Both File → New workspace… and File → Open workspace… land here; they
+  // differ only in which chooser step they request, so the unsaved-work guard
+  // can never be bypassed by picking the other one.
+  const leaveProject = (step: ProjectStartStep): void => {
     if (state.dirty && !window.confirm("You have unsaved changes. Leave this workspace and discard them?")) return;
-    setStartOnExisting(true);
+    setStartStep(step);
     state.closeProject();
     setPage("builder");
   };
@@ -184,8 +188,9 @@ export function App() {
   }, [theme]);
 
   useEffect(() => {
-    // No shortcuts before a project exists: Ctrl+S with nowhere to save and
-    // Ctrl+N with no visible canvas would both act on an invisible doc.
+    // No shortcuts before a workspace exists: Ctrl+S would have nowhere to
+    // save, and Ctrl+N would ask to leave a workspace that is not open — the
+    // chooser it navigates to is already on screen.
     if (state.project === null) return;
     const onKey = (event: KeyboardEvent) => {
       if (!(event.ctrlKey || event.metaKey)) return;
@@ -197,7 +202,11 @@ export function App() {
         void runSave();
       } else if (key === "n") {
         event.preventDefault();
-        state.newDoc();
+        // Ctrl+N follows File's New workspace… rather than creating a server:
+        // the shortcut and the menu item it is printed on must not diverge.
+        // leaveProject carries the unsaved-changes confirm, so the shortcut is
+        // no more destructive than the menu route.
+        leaveProject("create");
       }
       // Ctrl+O (loose-file open) was removed with the projects-only model.
     };
@@ -242,9 +251,9 @@ export function App() {
           </div>
         </header>
         <ProjectStartPage
-          initialStep={startOnExisting ? "open" : "choose"}
+          initialStep={startStep ?? "choose"}
           onOpened={(project) => {
-            setStartOnExisting(false);
+            setStartStep(null);
             state.openProject({ id: project.id, name: project.name });
             // Same rule as the launch restore above. Entering a workspace by
             // hand has no remembered server (openProject just cleared the
@@ -268,10 +277,9 @@ export function App() {
               off-center to the eye. */}
           {page === "builder" && <div className="titlebar__search"><SearchBar /></div>}
           {/* Current workspace — a passive indicator, NOT a button (user
-              decision): switching workspaces goes through File → Switch
+              decision): changing workspaces goes through File → Open
               workspace…, and the workspace home through the home button to the
-              left or File → Open server….
-              Anchored just left of the centered search via CSS. */}
+              left. Anchored just left of the centered search via CSS. */}
           <div className="titlebar__project" title={`Current workspace: ${state.project.name}`}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5v-9z" />
@@ -301,13 +309,9 @@ export function App() {
               </button>
               <TitlebarMenus
                 projectName={state.project.name}
-                onNew={() => {
-                  state.newDoc();
-                  setPage("builder");
-                }}
-                onOpen={() => setPage("repository")}
+                onNewWorkspace={() => leaveProject("create")}
+                onOpenWorkspace={() => leaveProject("open")}
                 onSave={() => void runSave()}
-                onSwitchProject={switchProject}
                 onExport={(language) => void runExport(language)}
                 onHelp={setHelpView}
               />
@@ -392,7 +396,7 @@ export function App() {
               // Opening a server from the project home lands the user on the
               // canvas so the click visibly loads it (errors show as the
               // builder's load banner, which only renders there).
-              <ProjectsPage onOpenServer={() => setPage("builder")} onSwitchProject={switchProject} />
+              <ProjectsPage onOpenServer={() => setPage("builder")} onSwitchProject={() => leaveProject("open")} />
             ) : page === "secrets" ? (
               // Keyed on the project id so switching projects remounts the
               // editor with a fresh load (same idiom as docId-keyed panels).
