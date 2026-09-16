@@ -7,9 +7,8 @@ import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 // 1. They cannot be externalized in the main-process bundle — an external
 //    require("@mcpeasy/engine") would land on a .ts file at runtime. So they
 //    are excluded from externalization and bundled from source instead.
-// 2. Aliasing straight to the source entry (mirroring vitest.config.ts and
-//    tsconfig paths) keeps resolution independent of pnpm's node_modules
-//    layout in all three bundles.
+// 2. Aliasing straight to the source entry (mirroring the tsconfig paths) keeps
+//    resolution independent of pnpm's node_modules layout in all three bundles.
 const schemaSrc = fileURLToPath(new URL("../../packages/schema/src/index.ts", import.meta.url));
 const engineSrc = fileURLToPath(new URL("../../packages/engine/src/index.ts", import.meta.url));
 

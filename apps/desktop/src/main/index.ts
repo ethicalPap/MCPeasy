@@ -680,8 +680,8 @@ function registerIpc(): void {
   });
 
   // The test console's whole point is fidelity: the SAME loadGraphDoc →
-  // buildServer → MCP client round trip the CLI and golden tests use, so
-  // what the console shows is byte-for-byte what Claude would see. Running
+  // buildServer → MCP client round trip the CLI uses, so what the console
+  // shows is byte-for-byte what Claude would see. Running
   // it in the main process (not the renderer) is also what makes upstream
   // HTTP actions work without any CORS proxy.
   ipcMain.handle("console:run", async (_event, req: RunToolRequest): Promise<RunToolResponse> => {

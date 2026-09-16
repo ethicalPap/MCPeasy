@@ -28,7 +28,6 @@ bundled to `.cjs` — keeping the Chromium sandbox ON.
 | zod | ^4.5.4 | 4.5.4 | Latest stable major (v4 API). SDK peer range is `^3.25 \|\| ^4.0`, so v4 satisfies both us and the SDK |
 | @modelcontextprotocol/sdk | ^1.30.0 | 1.30.0 | Latest stable; ships stdio + Streamable HTTP + InMemoryTransport; peer-depends on zod `^3.25 \|\| ^4.0`; engines node >= 18 |
 | commander | ^15.0.0 | 15.0.0 | Latest stable; ESM; engines node >= 22.12 — this sets the repo's Node floor |
-| vitest | ^4.1.11 | 4.1.11 | Latest stable; engines `^20 \|\| ^22 \|\| >= 24` |
 | tsx | ^4.23.13 | 4.23.13 | Latest stable; runs the CLI from source without a build step in phase 0 |
 | @types/node | ^26.4.1 | 26.4.1 | Latest; matches current Node LTS line |
 | pnpm | 11.25.0 (packageManager) | 11.25.0 | Latest stable; engines node >= 22.13 |

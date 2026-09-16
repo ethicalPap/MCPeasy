@@ -6,8 +6,8 @@ import { useEditor } from "../store";
 
 // The test console: pick a tool, fill its inputs, run it through the REAL
 // engine in the main process (same loadGraphDoc → buildServer → MCP client
-// path as the CLI and the golden tests), and show the result the model
-// would see. Env VALUES are typed here and held in component state only —
+// path as the CLI), and show the result the model would see.
+// Env VALUES are typed here and held in component state only —
 // never written into the doc (N5) and gone when the window closes.
 
 interface RunEntry {

@@ -19,8 +19,8 @@ import { SECRET_NAME_MAX_LENGTH, SECRET_NAME_RE } from "../shared/secretName";
 // atomic last-writer-wins write — fine for a single-window app, and it keeps
 // even secret NAMES out of plaintext on disk.
 
-/** The slice of Electron's safeStorage this module needs, injected so vitest
- * (plain Node, no Electron runtime) can substitute a fake cipher while
+/** The slice of Electron's safeStorage this module needs, injected so a caller
+ * without an Electron runtime can substitute another cipher while
  * main/index.ts passes the real safeStorage. Method names mirror the
  * electron.d.ts SafeStorage API (isEncryptionAvailable/encryptString/
  * decryptString) but are renamed here to make the injection seam obvious. */

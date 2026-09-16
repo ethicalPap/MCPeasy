@@ -1,12 +1,13 @@
 # mcpeasy
 
 Visual builder for Model Context Protocol servers. A server is designed as a
-**graph doc** (JSON) and run by one **engine** everywhere: browser test
+**graph doc** (JSON) and run by one **engine** everywhere: the in-app test
 console, local CLI over stdio, hosted over Streamable HTTP. Code export is a
-separate compiler validated against the engine by golden tests.
+separate compiler that targets the same engine semantics.
 
-This repo is at **phase 0** of the build plan: schema + engine + CLI `dev`/`lint`,
-with the golden harness already in place. See `docs/build-plan.md`.
+MCPeasy ships as a **packaged desktop app**. Install it, build a server on the
+canvas, and connect it to an MCP client from the Integrations page — no
+toolchain, no terminal, no repo checkout required.
 
 ## Layout
 
@@ -14,26 +15,11 @@ with the golden harness already in place. See `docs/build-plan.md`.
 |---|---|
 | `packages/schema` | Graph doc types, zod validation, migrations, the 10 lint rules, JSON Schema projection. Zero runtime deps beyond zod. |
 | `packages/engine` | `{{template}}` renderer, transforms, HTTP action (timeout/size cap/private-range guard), chain runner, SDK adapter (`buildServer`), stdio serving. |
+| `apps/desktop` | The Electron app: React Flow canvas, properties panel, test console, secrets, Integrations, and headless `--mcp-serve` mode. |
 | `apps/cli` | `mcpeasy dev <graph.json>` (stdio server), `mcpeasy lint <graph.json>`. |
-| `examples/` | Graph docs that double as golden-test fixtures. |
-| `tests/golden/` | Golden harness + result normalization (the N3 "identical results" contract). |
+| `examples/` | Graph docs usable as starting points. |
 
-## Quickstart
-
-```powershell
-corepack enable            # provides pnpm per package.json packageManager
-pnpm install
-pnpm test                  # vitest: schema, engine, golden suites
-pnpm typecheck             # tsc, noEmit
-
-# Run the echo example over stdio (MCP Inspector attaches to this):
-pnpm mcpeasy dev examples/echo.json
-
-# Lint a graph doc:
-pnpm mcpeasy lint examples/http-get.json
-```
-
-### Connect to Claude Code (from the desktop app)
+## Connect to Claude Code (from the desktop app)
 
 Open a saved server in the desktop app, go to **Integrations**, and press
 **Connect** on a client's tile. A dialog states exactly what will happen —
@@ -56,23 +42,26 @@ or validation errors, or declares an env var with no stored secret. See
 [`docs/integrations-claude-code.md`](docs/integrations-claude-code.md) for the
 citation-backed contract this implements against.
 
-### Try it in Claude Desktop (still manual)
+## Try it in Claude Desktop (still manual)
 
 Claude Desktop has no MCPeasy registration flow yet — it remains a hand-edited
-config. Add to `claude_desktop_config.json` (Windows: `%APPDATA%\Claude\`):
+config. Add to `claude_desktop_config.json` (Windows: `%APPDATA%\Claude\`),
+pointing `command` at the installed MCPeasy executable:
 
 ```json
 {
   "mcpServers": {
     "mcpeasy-echo": {
-      "command": "pnpm",
-      "args": ["--dir", "C:/dev/MCPeasy/MCPeasy", "mcpeasy", "dev", "examples/echo.json"]
+      "command": "C:/Program Files/MCPeasy/MCPeasy.exe",
+      "args": ["--mcp-serve", "--project", "<project-id>", "--server", "<path-to-server.json>"]
     }
   }
 }
 ```
 
-Restart Claude Desktop, then ask it to "echo the message hello".
+This is the same headless serve invocation the Integrations page writes for
+Claude Code, so secrets stay in the encrypted project store rather than the
+config file. Restart Claude Desktop, then ask it to "echo the message hello".
 
 ## Invariants worth knowing before editing
 

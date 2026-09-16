@@ -18,8 +18,9 @@ import process from "node:process";
 //
 // Errors are returned as VALUES, never thrown, matching projects.ts and
 // secrets.ts: these cross an IPC boundary where rejections lose their shape.
-// Filesystem roots and the config path are injected so vitest can drive the
-// whole module against a real tmpdir (same seam idiom as SecretsCipher).
+// Filesystem roots and the config path are injected rather than read from the
+// environment, so the whole module can be driven against a throwaway tmpdir
+// instead of the user's real config (same seam idiom as SecretsCipher).
 
 /** Entry shape for a stdio server (contract §3). `type` is written explicitly
  * even though Claude Code defaults to stdio, because a typeless entry with a

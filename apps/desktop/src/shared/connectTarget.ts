@@ -8,11 +8,10 @@
 // half-finished one at the same time, and the picker must say which is which
 // BEFORE the write, not fail afterwards with a message from main.
 //
-// WHY IT LIVES IN shared/ AND NOT IN THE DIALOG: the repo's test environment is
-// node (vitest.config.ts), so a React component cannot be rendered in a test.
-// Keeping the decision — what a server is called, and what stops it being
-// connected — as plain functions means the rules that gate a write outside the
-// workspace are covered by tests while the dialog stays presentation. Identical
+// WHY IT LIVES IN shared/ AND NOT IN THE DIALOG: keeping the decision — what a
+// server is called, and what stops it being connected — as plain functions means
+// the rules that gate a write outside the workspace can be reasoned about (and
+// reused) independently of React, while the dialog stays presentation. Identical
 // split to connectConfirm.ts and secretName.ts.
 
 /** A saved server as the picker sees it: the stored file plus everything that

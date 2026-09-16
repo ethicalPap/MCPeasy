@@ -5,12 +5,11 @@
 // class of action as deleting a server (ProjectsPage.tsx DeleteConfirmDialog),
 // so it uses the same protection: the user types the exact name to confirm.
 //
-// WHY THIS LIVES IN shared/ AND NOT IN THE DIALOG: the repo's test environment
-// is node (vitest.config.ts:21), so a React component cannot be rendered in a
-// test. Keeping the decision — what must be typed, and whether what was typed
-// matches — as plain functions means the rule that guards the write is covered
-// by tests, while the dialog is left as presentation. Same split as
-// secretName.ts, which holds the rule the Secrets page merely displays.
+// WHY THIS LIVES IN shared/ AND NOT IN THE DIALOG: keeping the decision — what
+// must be typed, and whether what was typed matches — as plain functions means
+// the rule that guards the write stays independent of React, while the dialog is
+// left as presentation. Same split as secretName.ts, which holds the rule the
+// Secrets page merely displays.
 
 /** Trim only. Case and inner spacing are deliberately NOT normalised: the point
  *  of type-to-confirm is deliberate transcription, and case-folding would let

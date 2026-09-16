@@ -18,11 +18,11 @@ import type { ProjectServerEntry } from "../../../shared/ipc";
 // server", and the home page's "New server" tile all still work exactly as
 // before; they are user intent, not an automatic landing.
 //
-// WHY IT LIVES IN shared/ AND NOT IN App.tsx: the repo's test environment is
-// node (vitest.config.ts), so a React component cannot be rendered in a test.
-// Keeping the decision as a plain function means the rule that governs what the
-// user sees on launch is covered by tests while the component stays wiring.
-// Identical split to serverSwitch.ts, connectConfirm.ts and secretName.ts.
+// WHY IT LIVES IN shared/ AND NOT IN App.tsx: keeping the decision as a plain
+// function means the rule that governs what the user sees on launch stays
+// independent of React and can be reasoned about on its own, while the component
+// stays wiring. Identical split to serverSwitch.ts, connectConfirm.ts and
+// secretName.ts.
 
 /** Which page the shell should show after entering a workspace. Mirrors the
  *  PageId values App.tsx sets, but deliberately narrowed to the two an

@@ -13,9 +13,10 @@ import { isLocalExecutionNode, type GraphDoc } from "@mcpeasy/schema";
 // only decrypt inside an Electron process. Therefore the registered `command`
 // is this app, and the config entry holds only a project id and a file path.
 //
-// This module is deliberately FREE OF ELECTRON IMPORTS so vitest can exercise
-// it under plain Node. Everything that needs the app (safeStorage, app.getPath,
-// serveStdio) lives in main/index.ts and calls these pure helpers.
+// This module is deliberately FREE OF ELECTRON IMPORTS so it can run under plain
+// Node. Everything that needs the app (safeStorage, app.getPath, serveStdio)
+// lives in main/index.ts and calls these pure helpers. Adding an Electron import
+// here would break headless serve mode.
 
 /** Flag that switches the app from "open a window" to "serve over stdio". */
 export const SERVE_FLAG = "--mcp-serve";
