@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    // TS 7 (native compiler) removed baseUrl (TS5102) and requires relative
+    // path mappings (TS5090) — hence ./ prefixes and no baseUrl here.
+    "paths": {
+      "@mcpeasy/schema": ["./packages/schema/src/index.ts"],
+      "@mcpeasy/engine": ["./packages/engine/src/index.ts"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*.ts",
+    "packages/*/test/**/*.ts",
+    // CLI only: apps/desktop has its OWN tsconfigs (node + web) because its
+    // three bundles need Bundler resolution and DOM libs that would be wrong
+    // for the NodeNext packages this root config checks. `pnpm typecheck`
+    // chains all three projects.
+    "apps/cli/src/**/*.ts",
+    "tests/**/*.ts"
+  ]
+}

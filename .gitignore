@@ -1,0 +1,11 @@
+node_modules/
+dist/
+out/
+coverage/
+*.tsbuildinfo
+*.log
+.env
+docs/
+NVIDIA Corporation
+test.py
+.pyrovibes

@@ -1,0 +1,3885 @@
+/* Design tokens — copied from PyroTrace-Cloud's light "Purple Theme"
+   (app/globals.css :root) so both apps read as one family: white surfaces,
+   purple primary hsl(273 63% 36%), teal accent, 10px radius, and the
+   semantic runtime-edge palette (green normal / amber first-seen / red
+   risky / blue internet) with its glow + flow-ring tokens. Values are raw
+   HSL triplets used as hsl(var(--x)) — the PyroTrace idiom. */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 270 50% 10%;
+  --card: 270 20% 98%;
+  --primary: 273 63% 36%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 270 15% 95%;
+  --muted: 270 15% 95%;
+  --muted-foreground: 270 10% 45%;
+  --accent: 174 56% 40%;
+  --destructive: 0 84% 60%;
+  --warning: 39 85% 45%;
+  --ok: 145 55% 42%;
+  --border: 270 15% 90%;
+  --border-strong: 270 12% 80%;
+  --ring: 273 63% 36%;
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 270 20% 30%;
+  --sidebar-accent: 270 15% 94%;
+  --sidebar-accent-foreground: 270 50% 15%;
+  --sidebar-border: 270 15% 90%;
+  --radius: 0.625rem;
+  --radius-sm: 0.4375rem;
+
+  /* Shell chrome heights. These exist so anything that has to dock BELOW the
+     app header (the integrations side panel) computes its offset from the same
+     numbers the chrome itself is laid out with, instead of repeating them.
+     --titlebar-h mirrors captionOverlay().height in src/main/index.ts; the
+     env() is what Windows reports for the caption area, and the 40px fallback
+     covers Linux and the browser preview where that env var is absent.
+     --app-chrome-h is the y of the header's horizontal rule (.toolbar's
+     border-bottom, mitered with .sidebar__body's border-top). */
+  --titlebar-h: max(env(titlebar-area-height, 40px), 40px);
+  --toolbar-h: 64px;
+  --app-chrome-h: calc(var(--titlebar-h) + var(--toolbar-h));
+
+  /* Semantic edge palette (PyroTrace): normal=green, first-seen=yellow,
+     risky/issue=red, internet=blue — plus dim/glow/flow supports. */
+  --runtime-edge-normal: #3ba55d;
+  --runtime-edge-first-seen: #d9a326;
+  --runtime-edge-risky: #dc4c4c;
+  --runtime-edge-internet: #4c86d6;
+  --runtime-edge-normal-opacity: 0.42;
+  --runtime-edge-first-seen-opacity: 0.72;
+  --runtime-edge-risky-opacity: 0.72;
+  --runtime-edge-internet-opacity: 0.5;
+  --runtime-edge-glow: rgba(109, 143, 208, 0.1);
+  --runtime-edge-flow-glow: rgba(109, 143, 208, 0.42);
+  --runtime-edge-flow-ring: rgba(255, 255, 255, 0.96);
+
+  /* Connection accents = PyroTrace hues fitted to MCP graph semantics. */
+  --kind-tool: #622296;
+  --kind-action: #4c86d6;
+  --kind-transform: #d9a326;
+  --kind-return: #2d9f94;
+
+  --shadow-1: 0 1px 4px rgba(39, 6, 66, 0.07), 0 1px 2px rgba(39, 6, 66, 0.05);
+  --shadow-2: 0 4px 24px rgba(39, 6, 66, 0.12), 0 1px 4px rgba(39, 6, 66, 0.06);
+}
+
+/* Preferences swaps tokens rather than component styles: every existing
+   panel, menu and canvas surface follows one palette, which prevents a future
+   component from quietly shipping light-only colors.
+   The dark palette is the "Midnight" theme: neutral graphite surfaces with
+   ZERO saturation — the earlier navy tint (hue ~225) was removed on user
+   request, so keep these achromatic; purple primary + teal accent remain the
+   brand color on top. If you change --background here, update the matching
+   overlay hex in src/main/index.ts (Windows caption controls live outside
+   the DOM and cannot read these tokens). */
+:root[data-theme="dark"] {
+  --background: 0 0% 7%;
+  --foreground: 0 0% 94%;
+  --card: 0 0% 10%;
+  --secondary: 0 0% 14%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 0 0% 68%;
+  --border: 0 0% 19%;
+  --border-strong: 0 0% 31%;
+  --sidebar-background: 0 0% 8%;
+  --sidebar-foreground: 0 0% 85%;
+  --sidebar-accent: 0 0% 15%;
+  --sidebar-accent-foreground: 0 0% 95%;
+  --sidebar-border: 0 0% 19%;
+  /* Flow-dot ring must match the canvas background (0 0% 7% = #121212), or
+     moving dots get a visible halo of the wrong hue. */
+  --runtime-edge-flow-ring: rgba(18, 18, 18, 0.96);
+  --shadow-1: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.22);
+  --shadow-2: 0 6px 28px rgba(0, 0, 0, 0.46), 0 1px 4px rgba(0, 0, 0, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font:
+    13px/1.5 "Segoe UI Variable Text",
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Shell: title bar over the left pages rail + main column. */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-shell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.small {
+  font-size: 12px;
+}
+
+.muted {
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+}
+
+/* Shared gradient heading (PyroTrace pyro-heading-gradient: pink → purple). */
+.heading-gradient {
+  background-image: linear-gradient(90deg, hsl(340 82% 60%), hsl(273 70% 58%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  width: fit-content;
+}
+
+/* ---------- sidebar (reference layout: grouped full-width panel) ----------
+   Brand header + collapse toggle, General/Automation/Resources sections of
+   icon+label rows with count badges, pinned Settings/Help footer. Collapsed
+   form narrows to an icon strip. */
+
+/* The vertical separator between sidebar and canvas lives on __body +
+   __footer instead of the wrapper so it starts BELOW the header's
+   horizontal border — no crossing lines at the junction. */
+.sidebar {
+  width: 216px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  background: hsl(var(--sidebar-background));
+  transition: width 160ms ease;
+}
+
+.sidebar--collapsed {
+  width: 64px;
+}
+
+.sidebar__header {
+  /* Same token as .toolbar: the two together form one continuous header band,
+     and the side panel docks to its lower edge. */
+  height: var(--toolbar-h);
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px 0 14px;
+  /* No border-bottom here — the horizontal separator lives on
+     sidebar__body's border-top so CSS miters it with border-right,
+     stopping the line cleanly at the vertical separator. */
+}
+
+.sidebar--collapsed .sidebar__header {
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 0;
+}
+
+.sidebar__logo {
+  display: inline-flex;
+  flex: none;
+}
+
+.sidebar--collapsed .sidebar__logo svg {
+  width: 22px;
+  height: 22px;
+}
+
+.sidebar__brand {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar__collapse {
+  margin-left: auto;
+  color: hsl(var(--muted-foreground));
+}
+
+.sidebar--collapsed .sidebar__collapse {
+  margin-left: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.sidebar__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /* Horizontal + vertical borders on the same element so CSS miters
+     the corner — the horizontal line stops at the vertical separator
+     instead of crossing through it. */
+  border-top: 1px solid hsl(var(--sidebar-border));
+  border-right: 1px solid hsl(var(--sidebar-border));
+}
+
+.sidebar--collapsed .sidebar__body {
+  padding: 10px 8px;
+  gap: 10px;
+}
+
+/* Nav rows: icon + label + optional count badge, accent pill when active. */
+.side-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  color: hsl(var(--sidebar-foreground));
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.sidebar--collapsed .side-link {
+  justify-content: center;
+  padding: 9px 0;
+}
+
+.side-link:hover {
+  background: hsl(var(--sidebar-accent));
+  color: hsl(var(--sidebar-accent-foreground));
+}
+
+.side-link--active {
+  background: hsl(273 63% 36% / 0.09);
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.side-link__icon {
+  display: inline-flex;
+  flex: none;
+  font-size: 18px; /* sizes the 1em nav icon */
+}
+
+.side-link__label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Count badge — the reference's small outlined number chip on the row end. */
+.side-link__badge {
+  flex: none;
+  min-width: 20px;
+  padding: 1px 6px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background: hsl(var(--background));
+  font-size: 10.5px;
+  font-weight: 600;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+}
+
+.side-link--active .side-link__badge {
+  border-color: hsl(273 63% 36% / 0.35);
+  color: hsl(var(--primary));
+}
+
+.sidebar__footer {
+  flex: none;
+  padding: 10px;
+  border-top: 1px solid hsl(var(--sidebar-border));
+  border-right: 1px solid hsl(var(--sidebar-border));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar--collapsed .sidebar__footer {
+  padding: 10px 8px;
+}
+
+/* ---------- placeholder pages ---------- */
+
+.page-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--background));
+}
+
+.page-placeholder__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  max-width: 380px;
+  padding: 34px 38px;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+  box-shadow: var(--shadow-1);
+}
+
+.page-placeholder__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  color: hsl(var(--primary));
+  background: hsl(273 63% 36% / 0.09);
+  font-size: 30px; /* sizes the 1em nav icon up to hero scale */
+}
+
+.page-placeholder__card h2 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.page-placeholder__card p {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.55;
+}
+
+.page-placeholder__soon {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: hsl(var(--primary));
+  background: hsl(273 63% 36% / 0.09);
+  padding: 3px 12px;
+  border-radius: 999px;
+}
+
+/* ---------- workspace home ---------- */
+
+.projects-page {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: hsl(var(--background));
+}
+
+.project-home__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.project-home__name {
+  margin: 0;
+  font-size: 20px;
+}
+
+.project-home__header .muted {
+  margin: 2px 0 0;
+}
+
+.project-home__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.project-card__save {
+  padding: 7px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font: inherit;
+  cursor: pointer;
+}
+
+.project-home__switch {
+  padding: 7px 14px;
+  border: 1px solid hsl(var(--border-strong));
+  border-radius: var(--radius-sm);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font: inherit;
+  cursor: pointer;
+}
+
+.project-home__switch:hover {
+  background: hsl(var(--muted));
+}
+
+.projects-notice {
+  margin: 0;
+  font-size: 12px;
+  color: hsl(var(--ok));
+}
+
+/* Export result toast: token-based so it follows Light and Midnight. */
+.export-toast {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 60;
+  max-width: 480px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: hsl(var(--ok));
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+  overflow-wrap: anywhere;
+}
+
+.export-toast--error {
+  color: hsl(var(--destructive));
+}
+
+.projects-notice--error {
+  color: hsl(var(--destructive));
+}
+
+/* ── server tile delete button ──────────────────────────────────────────
+   Each server tile is wrapped in .server-tile-wrapper (position:relative)
+   so the delete icon can float in the top-right corner on hover. */
+
+.server-tile-wrapper {
+  position: relative;
+}
+
+.server-tile__delete {
+  /* Hidden by default, revealed on hover over the wrapper. */
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+.server-tile-wrapper:hover .server-tile__delete {
+  opacity: 1;
+}
+
+.server-tile__delete:hover {
+  background: hsl(var(--destructive));
+  color: #fff;
+}
+
+/* ── delete-confirm dialog ──────────────────────────────────────────────
+   Reuses .modal-backdrop from the help dialog. Structurally similar but
+   narrower and with a destructive-action submit button. */
+
+.confirm-dialog {
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  background: hsl(var(--background));
+  box-shadow: var(--shadow-2);
+}
+
+.confirm-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 14px 12px 18px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.confirm-dialog__header h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.confirm-dialog__body {
+  padding: 16px 18px 18px;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.confirm-dialog__body p {
+  margin: 0 0 10px;
+}
+
+.confirm-dialog__prompt {
+  margin-bottom: 6px !important;
+}
+
+.confirm-dialog__input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid hsl(var(--border-strong));
+  border-radius: var(--radius-sm);
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.confirm-dialog__input:focus {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -1px;
+}
+
+.confirm-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.confirm-dialog__cancel {
+  padding: 7px 14px;
+  border: 1px solid hsl(var(--border-strong));
+  border-radius: var(--radius-sm);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font: inherit;
+  cursor: pointer;
+}
+
+.confirm-dialog__cancel:hover {
+  background: hsl(var(--muted));
+}
+
+.confirm-dialog__delete {
+  padding: 7px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: hsl(var(--destructive));
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirm-dialog__delete:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── connect-confirm variant ───────────────────────────────────────────────
+   Same dialog, non-destructive action. Two differences from the delete case:
+   it is wider (it carries a list of consequences, not one sentence), and its
+   submit uses --primary rather than --destructive, because connecting is a
+   normal, reversible action that merely deserves deliberate consent. */
+
+.confirm-dialog--connect {
+  width: min(540px, 100%);
+}
+
+.confirm-dialog__effects {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.confirm-dialog__effects li {
+  line-height: 1.5;
+}
+
+/* Long absolute paths appear here. Wrapping on any character keeps a deep
+   Windows path from forcing the dialog wider than its max width. */
+.confirm-dialog__effects code {
+  overflow-wrap: anywhere;
+}
+
+/* ── server picker (step one of connecting) ────────────────────────────────
+   A list of choices inside the connect dialog, not a form: each row IS the
+   action. Bounded height because a workspace can hold many servers and the
+   dialog must not grow past the window. */
+
+.server-picker {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.server-picker__row {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 11px;
+  border: 1px solid hsl(var(--border-strong));
+  border-radius: var(--radius-sm);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.server-picker__row:hover:not(:disabled) {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--primary));
+}
+
+/* A blocked server stays legible rather than being dimmed to the usual 0.4:
+   its whole purpose on screen is to be READ, since the row explains what to
+   fix. Only the pointer signals that it cannot be chosen. */
+.server-picker__row:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.server-picker__name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+}
+
+.server-picker__tag {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: hsl(var(--secondary));
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.server-picker__meta {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+}
+
+.server-picker__blockers {
+  color: hsl(var(--destructive));
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.confirm-dialog__confirm {
+  padding: 7px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirm-dialog__confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- secrets page ----------
+   Extends .projects-page (same scroll/padding shell); rows reuse the global
+   input/button tokens so both themes come for free. */
+
+.secrets-page {
+  max-width: 720px;
+}
+
+.secrets-page__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.secrets-page__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.secrets-page__name {
+  width: 220px;
+  flex: none;
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+}
+
+/* Stored rows are read-only labels (write-once): same column width as the
+   name input so stored rows and the entry form align. */
+.secrets-page__stored-name {
+  width: 220px;
+  flex: none;
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+}
+
+/* Static placeholder dots — intentionally NOT an input holding the value;
+   the renderer never has stored values under write-once. */
+.secrets-page__mask {
+  flex: 1;
+  min-width: 0;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 2px;
+  user-select: none;
+}
+
+/* Entry form sits below the stored rows with a little breathing room. */
+.secrets-page__add {
+  margin-top: 12px;
+}
+
+.secrets-page__error-note {
+  margin: 4px 0 0;
+  font-size: 11px;
+}
+
+.secrets-page__name--bad {
+  border-color: hsl(var(--destructive));
+}
+
+.secrets-page__value {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Inline per-row validation, aligned under the name column. */
+.secrets-page__error {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: hsl(var(--destructive));
+}
+
+/* Recovery banner: error text left, clear-and-reset action right. */
+.secrets-page__recover {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.secrets-page__recover button {
+  flex: none;
+}
+
+/* Declared-but-unsaved env names as click-to-add chips. */
+.secrets-page__chip {
+  padding: 2px 10px;
+  margin: 0 2px;
+  border-radius: 999px;
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 11px;
+}
+
+/* ---------- integrations page ----------
+   Extends .projects-page like .secrets-page does, and reuses the secrets row
+   classes for the registered list so both pages stay visually identical.
+   No new palette: every colour is an existing token. */
+
+.integrations-page {
+  /* Wider than the other pages: this one holds a multi-column catalog grid,
+     not a single column of form rows. */
+  max-width: 1040px;
+}
+
+/* Category filters + search, following the reference's toolbar row. */
+.integrations__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.integrations__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.integrations__filter {
+  padding: 4px 10px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.integrations__filter--active {
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+}
+
+.integrations__search {
+  min-width: 200px;
+  font-size: 12px;
+}
+
+.integrations__summary {
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+
+/* auto-fill rather than auto-fit: with a small catalog, auto-fit would stretch
+   two tiles across the full width and look nothing like the reference. */
+.integrations__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.integrations__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--card));
+}
+
+.integrations__tile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.integrations__tile-id h4 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.integrations__tile-category {
+  font-size: 11px;
+  color: hsl(var(--muted-foreground));
+}
+
+.integrations__tile-desc {
+  margin: 0;
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+}
+
+.integrations__tile-reason {
+  margin: 0;
+  font-size: 11px;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Actions pinned to the bottom so buttons line up across tiles of differing
+   description length. */
+.integrations__tile-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.integrations__details-btn {
+  background: transparent;
+}
+
+.integrations__badge {
+  flex: none;
+  padding: 2px 8px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* --accent (teal) is the palette's affirmative colour; there is no dedicated
+   success token, and inventing one would drift from the theme. */
+.integrations__badge--connected {
+  border-color: hsl(var(--accent) / 0.4);
+  background: hsl(var(--accent) / 0.12);
+  color: hsl(var(--accent));
+}
+
+.integrations__badge--detected {
+  border-color: hsl(var(--primary) / 0.4);
+  background: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+}
+
+.integrations__badge--warning {
+  border-color: hsl(var(--destructive) / 0.4);
+  background: hsl(var(--destructive) / 0.1);
+  color: hsl(var(--destructive));
+}
+
+.integrations__badge--needs_setup,
+.integrations__badge--unsupported {
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---------- side panel (integration details) ----------
+   Ported from the reference's slide-over (PyroTrace-Cloud ui/sheet.tsx +
+   detections/panel-shared.tsx DetailPanel): right-anchored full-height sheet
+   over a dimmed backdrop, bordered header, left nav rail with an active pill,
+   independently scrolling body. Geometry and easing are the reference's; every
+   colour is an existing MCPeasy token so both themes come for free. */
+
+.side-panel__backdrop {
+  position: fixed;
+  /* Docked to the CONTENT area, not the viewport: the panel is a detail view
+     of the page below the header, so it stops at the header's horizontal rule
+     rather than covering the app's own chrome. --app-chrome-h is derived from
+     the same tokens that lay that chrome out, so the two cannot drift apart.
+     Deliberate divergence from the reference, whose sheet is `inset-y-0
+     h-screen` (PyroTrace-Cloud ui/sheet.tsx:102) because that app's header
+     scrolls with the document instead of being fixed window chrome. */
+  top: var(--app-chrome-h);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  /* Above .modal-backdrop's 200 would fight the help dialog for the same
+     space; this panel is a peer of it, not a child, so it shares the level. */
+  z-index: 200;
+  display: flex;
+  justify-content: flex-end;
+  /* The reference uses bg-black/50. The app's existing overlay tint is a
+     purple-black at 0.28; this sits between the two so the panel separates
+     clearly from a busy catalog without hiding it. */
+  background: hsl(270 25% 8% / 0.42);
+  animation: side-panel-overlay-in 180ms ease-out both;
+}
+
+.side-panel__backdrop--closing {
+  animation: side-panel-overlay-out 180ms ease-in both;
+}
+
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  /* Reference width is a fixed 920px; capped here because a desktop window can
+     legitimately be narrower than that, and the panel must never exceed it. */
+  width: min(920px, 100%);
+  height: 100%;
+  background: hsl(var(--background));
+  border-left: 1px solid hsl(var(--border));
+  box-shadow: var(--shadow-2);
+  /* Reference: 280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 0.96 -> 1. */
+  animation: side-panel-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.side-panel--closing {
+  /* 240ms must stay in step with EXIT_MS in SidePanel.tsx. */
+  animation: side-panel-exit 240ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.side-panel:focus-visible {
+  /* The panel takes focus on open (tabIndex -1). It is a container, not a
+     control, so a focus ring around the whole sheet would be noise. */
+  outline: none;
+}
+
+.side-panel__header {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 16px 16px 14px 22px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.side-panel__heading {
+  min-width: 0;
+}
+
+.side-panel__eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: hsl(var(--muted-foreground));
+}
+
+.side-panel__title {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.side-panel__close {
+  align-self: start;
+}
+
+/* Spans both columns so status badges and action rows use the full width
+   rather than being squeezed beside the close button. */
+.side-panel__header-extra {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.side-panel__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* 210px matches the reference rail exactly. */
+.side-panel__nav {
+  flex: none;
+  width: 210px;
+  padding: 12px;
+  overflow-y: auto;
+  border-right: 1px solid hsl(var(--border));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Same shape as .side-link in the app sidebar, so the rail reads as the same
+   control in a different place rather than a second nav idiom. */
+.side-panel__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.side-panel__nav-item:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  border-color: transparent;
+}
+
+/* The reference's active item is a primary-tinted pill; this is the same
+   treatment already used by .side-link--active. */
+.side-panel__nav-item--active {
+  background: hsl(273 63% 36% / 0.09);
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.side-panel__nav-icon {
+  flex: none;
+  width: 16px;
+  text-align: center;
+}
+
+.side-panel__nav-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.side-panel__main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 18px 22px 24px;
+}
+
+/* Panel bodies own their own spacing: the page-level .integrations__section
+   carries a top margin to separate stacked blocks, which is wrong for the first
+   block inside a panel whose bordered header and 18px body padding already set
+   the gap above it. */
+.side-panel__main > .integrations__section:first-child {
+  margin-top: 0;
+}
+
+@keyframes side-panel-enter {
+  from {
+    opacity: 0.96;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes side-panel-exit {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0.96;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes side-panel-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes side-panel-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Users who ask for less motion get the panel with no slide or fade; it still
+   appears and disappears, and the JS exit timer is unaffected. */
+@media (prefers-reduced-motion: reduce) {
+  .side-panel,
+  .side-panel--closing,
+  .side-panel__backdrop,
+  .side-panel__backdrop--closing {
+    animation: none;
+  }
+}
+
+/* Blocks are separated by whitespace alone. The top rule this used to draw was
+   removed on request: with the page header's subtitle gone there is nothing
+   above it to divide, so it read as a stray line under the title rather than as
+   a separator. The 18px padding went with it, since it existed only to keep
+   text off that border. The remaining margin matches .integrations__toolbar's,
+   so the blocks below the header keep one even rhythm. */
+.integrations__section {
+  margin-top: 18px;
+}
+
+.integrations__section h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+/* Two-column fact list: label column fixed so values line up. */
+.integrations__facts {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 4px 12px;
+  margin: 0 0 12px;
+  font-size: 12px;
+}
+
+.integrations__facts dt {
+  color: hsl(var(--muted-foreground));
+}
+
+.integrations__facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.integrations__override {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.integrations__override label {
+  flex: none;
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+}
+
+.integrations__override input {
+  flex: 1;
+  min-width: 0;
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+}
+
+/* Copyable command: the user runs these in their own terminal, so the code
+   text must be selectable as well as copyable. */
+.integrations__command {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  margin-bottom: 10px;
+}
+
+.integrations__command code {
+  padding: 6px 10px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--muted));
+  font-size: 12px;
+  user-select: all;
+}
+
+.integrations__command p {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 11px;
+}
+
+/* Every reason the connect action is blocked, listed together so the user
+   fixes them in one pass (same intent as the console's blocker list). */
+.integrations__blockers {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-size: 12px;
+  color: hsl(var(--destructive));
+}
+
+/* --accent (teal) is the palette's affirmative colour; there is no dedicated
+   success token, and inventing one would drift from the theme. */
+.integrations__grant--on {
+  font-size: 12px;
+  color: hsl(var(--accent));
+}
+
+.integrations__grant--off {
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---------- startup chooser + shared tiles ----------
+   Tile grid follows the provided reference (rounded tiles, centred logo above
+   a label, hover lift) but expressed in MCPeasy tokens so the tiles follow
+   Light and Midnight instead of the reference's fixed palette. Per user
+   feedback the tiles are doubled from the reference's 200×260 and the whole
+   chooser is centred in the window. */
+
+.start-page {
+  flex: 1;
+  overflow-y: auto;
+  background: hsl(var(--background));
+  /* Centre the chooser panel in the window instead of pinning it to the top
+     left; the column axis keeps it scrollable when the window is short. */
+  display: flex;
+  align-items: safe center;
+  justify-content: center;
+}
+
+.start-page__panel {
+  max-width: 1180px;
+  margin: auto; /* with flex centring this also handles overflow gracefully */
+  padding: 40px 48px;
+  text-align: center;
+}
+
+/* Reference stepper: short segments, active one carries the brand color. */
+.start-stepper {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 8px 0 20px;
+}
+
+.start-stepper__seg {
+  width: 53px;
+  height: 4px;
+  border-radius: 2px;
+  background: hsl(var(--border));
+}
+
+.start-stepper__seg--active {
+  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
+}
+
+.start-page__title {
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  /* heading-gradient shrinks the box to fit-content (the gradient must clip to
+     the text), so the box itself needs auto margins to centre — text-align
+     alone cannot centre a shrunk block. */
+  margin: 0 auto 40px;
+}
+
+.start-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.start-section-head h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.start-page__subtitle {
+  font-size: 14px;
+  margin: 0 0 28px;
+  color: hsl(var(--muted-foreground));
+}
+
+.start-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.start-tile {
+  width: 200px;
+  height: 260px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 24px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* On the startup chooser the tiles are doubled (user feedback) and the grid
+   is centred. Scoped to .start-page so the workspace home's server grid —
+   which can hold many tiles — keeps the compact reference size. */
+.start-page .start-tiles {
+  justify-content: center;
+  gap: 24px;
+}
+
+.start-page .start-tile {
+  /* Doubled width from the 200px reference, but viewport-capped so two tiles
+     stay side by side in smaller windows instead of wrapping. Height is kept
+     shorter than a doubled 260px (user feedback: full double looked too tall). */
+  width: min(400px, 42vw);
+  height: min(420px, 52vh);
+  min-width: 240px;
+  min-height: 280px;
+  border-radius: 32px;
+  padding: 16px;
+  gap: 32px;
+}
+
+.start-page .start-tile__logo svg {
+  width: 104px;
+  height: 104px;
+}
+
+.start-page .start-tile__label {
+  font-size: 22px;
+  gap: 6px;
+}
+
+.start-page .start-tile__hint {
+  font-size: 14px;
+}
+
+/* :not(:disabled) so a grayed-out tile (e.g. "Open existing" with 0 saved
+   workspaces) doesn't light up on hover and pretend to be clickable. */
+.start-tile:hover:not(:disabled) {
+  border-color: hsl(var(--border-strong));
+  box-shadow: var(--shadow-2);
+}
+
+.start-tile:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.start-tile:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.start-tile--current {
+  border-color: hsl(var(--primary));
+}
+
+.start-tile__logo {
+  width: 140px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground));
+}
+
+.start-tile__logo--primary {
+  color: hsl(var(--primary));
+}
+
+.start-tile__label {
+  font-size: 16px;
+  line-height: 1.45;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-wrap: anywhere;
+}
+
+.start-tile__hint {
+  font-size: 11px;
+  color: hsl(var(--muted-foreground));
+}
+
+.start-create {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.start-create input {
+  width: 260px;
+  padding: 8px 11px;
+  border: 1px solid hsl(var(--border-strong));
+  border-radius: var(--radius-sm);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font: inherit;
+}
+
+.start-create input:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 1px;
+}
+
+.start-create__btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font: inherit;
+  cursor: pointer;
+}
+
+.start-create__btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.start-page__error {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: hsl(var(--destructive));
+}
+
+.start-page__empty {
+  font-size: 13px;
+  color: hsl(var(--muted-foreground));
+}
+
+.start-back {
+  margin-top: 24px;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  color: hsl(var(--muted-foreground));
+  font: inherit;
+  cursor: pointer;
+}
+
+.start-back:hover {
+  color: hsl(var(--foreground));
+}
+
+/* ---------- custom title bar ---------- */
+
+.titlebar {
+  position: relative;
+  z-index: 100;
+  /* --titlebar-h already folds in the 40px floor the old min-height provided. */
+  height: var(--titlebar-h);
+  flex: none;
+  background: hsl(var(--background));
+  /* The blank parts of this row replace the hidden native title bar's drag
+     target. Every interactive descendant opts back out below. */
+  app-region: drag;
+  -webkit-app-region: drag;
+}
+
+.titlebar__safe-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--titlebar-h);
+  margin-left: env(titlebar-area-x, 0px);
+  width: env(titlebar-area-width, 100%);
+  padding: 0 12px;
+}
+
+.titlebar__identity {
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+  user-select: none;
+}
+
+.titlebar__left {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Current workspace — a passive indicator (not a button; switching happens via
+   File → Switch workspace…). Anchored immediately LEFT of the centered search:
+   the search sits at 50% with width min(440px, 34vw) clamped to ≥240px, so
+   its left edge is 50% + max(120px, min(220px, 17vw)) from the right — this
+   `right` mirrors that math plus a 12px gap. Change one, change both.
+   Stays part of the titlebar drag region since it is not interactive. */
+.titlebar__project {
+  position: absolute;
+  right: calc(50% + max(120px, min(220px, 17vw)) + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: hsl(var(--foreground));
+  font-size: 12px;
+  font-weight: 600;
+  user-select: none;
+  pointer-events: none; /* purely informative; hover belongs to the drag area */
+}
+
+.titlebar__project svg {
+  flex: none;
+  color: hsl(var(--primary));
+}
+
+.titlebar__project-name {
+  min-width: 0;
+  max-width: 200px; /* long names truncate rather than push into the search */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Workspace home shortcut. Sized to match .app-menu__trigger's 28px height so
+   the brand, this button and File/Help share one optical baseline. Like the
+   menus it MUST opt out of app-region dragging — the title bar sets
+   `app-region: drag`, which makes the OS swallow pointer events before the
+   renderer sees them, so without this the button would look interactive and
+   silently do nothing. */
+.titlebar__home {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  /* nav.tsx icons draw at 1em, so font-size is what sizes the glyph. */
+  font-size: 16px;
+  /* Cancels the generic `button` rule's `transition: background 120ms`. The
+     active tint below is a state indicator, not a hover affordance, so it must
+     switch instantly on navigation — and crucially must CLEAR instantly when
+     navigating away, which a transition on the base rule would leave mid-fade.
+     Hover still reads as immediate at this size. */
+  transition: none;
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar__home:hover {
+  background: hsl(var(--muted));
+  border-color: transparent;
+  color: hsl(var(--foreground));
+}
+
+/* Matches the sidebar's active row treatment so "where am I" reads the same
+   whichever chrome owns the destination. Instant in both directions via the
+   base rule's `transition: none`. */
+.titlebar__home[aria-current="page"] {
+  color: hsl(var(--primary));
+  background: hsl(273 63% 36% / 0.08);
+}
+
+/* File/Help are custom because the window already owns this title row. Each
+   interactive island opts out of app-region dragging; the rest remains a
+   large, forgiving window drag target. */
+.titlebar-menus {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+}
+
+.app-menu {
+  position: relative;
+}
+
+.app-menu__trigger {
+  height: 28px;
+  padding: 0 9px;
+  border: none;
+  background: transparent;
+  color: hsl(var(--foreground));
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.app-menu__trigger:hover,
+.app-menu__trigger--open {
+  background: hsl(var(--muted));
+  border-color: transparent;
+}
+
+.app-menu__popup {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  z-index: 150;
+  width: 218px;
+  padding: 5px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  background: hsl(var(--background));
+  box-shadow: var(--shadow-2);
+}
+
+.app-menu__item {
+  width: 100%;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5px 8px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  border-radius: 6px;
+}
+
+.app-menu__item:hover,
+.app-menu__item:focus-visible {
+  background: hsl(var(--muted));
+  border-color: transparent;
+}
+
+.app-menu__item kbd {
+  color: hsl(var(--muted-foreground));
+  font: inherit;
+  font-size: 10.5px;
+}
+
+.app-menu__separator {
+  height: 1px;
+  margin: 4px 3px;
+  background: hsl(var(--border));
+}
+
+/* Centered on the FULL window width (absolute within .titlebar, outside the
+   safe area) so the field sits at the visual middle of the app, not the
+   middle of "titlebar minus caption controls". Width caps keep it clear of
+   the File/Help island on the left and the min/max/close controls on the
+   right at small window sizes. */
+.titlebar__search {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(440px, 34vw);
+  min-width: 240px;
+  z-index: 1;
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+}
+
+/* ---------- help dialogs ---------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: hsl(270 25% 8% / 0.28);
+  backdrop-filter: blur(2px);
+}
+
+.help-dialog {
+  width: min(460px, 100%);
+  max-height: min(620px, calc(100% - 48px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  background: hsl(var(--background));
+  box-shadow: var(--shadow-2);
+}
+
+.help-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 14px 12px 18px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.help-dialog__header h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.help-dialog__body {
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.help-dialog__body > p:first-child,
+.help-dialog__body > :first-child {
+  margin-top: 0;
+}
+
+.documentation-content p,
+.documentation-content ol {
+  margin-top: 0;
+}
+
+.documentation-content li + li {
+  margin-top: 7px;
+}
+
+.about-content,
+.update-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.about-content__logo {
+  width: 54px;
+  height: 54px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.about-content h3,
+.about-content p,
+.update-status p {
+  margin: 0 0 5px;
+}
+
+.theme-options {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.theme-options legend {
+  margin-bottom: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: hsl(var(--muted-foreground));
+}
+
+.theme-option {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+}
+
+.theme-option:has(input:checked) {
+  border-color: hsl(var(--primary));
+  background: hsl(273 63% 36% / 0.08);
+}
+
+.theme-option input {
+  margin-top: 3px;
+}
+
+.theme-option span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.theme-option small {
+  color: hsl(var(--muted-foreground));
+}
+
+.update-status__icon {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: hsl(var(--primary));
+  background: hsl(273 63% 36% / 0.1);
+  font-weight: 800;
+}
+
+/* ---------- toolbar ---------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* Must stay equal to .sidebar__header's height, or the header rule breaks
+     into two mismatched segments at the sidebar seam. */
+  height: var(--toolbar-h);
+  padding: 0 16px;
+  background: hsl(var(--background));
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.toolbar-page {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  margin-right: 6px;
+}
+
+/* ---------- builder server switcher ----------
+   Sits between the "Builder" heading and the save group. Deliberately quieter
+   than a form control: at rest it is a label with a chevron, so the toolbar
+   still reads as a heading row rather than a bar of inputs. The popup reuses
+   the title bar menu's geometry (.app-menu__popup) because it IS the same
+   affordance one row down; only the row layout differs, since these rows carry
+   a secondary "last saved" line. */
+
+.server-menu {
+  position: relative;
+  min-width: 0;
+}
+
+.server-menu__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 260px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: hsl(var(--foreground));
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.server-menu__trigger:hover,
+.server-menu__trigger--open {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--border));
+}
+
+/* The name may be an arbitrary file name, so it truncates rather than pushing
+   the save controls off the row. */
+.server-menu__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.server-menu__popup {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  z-index: 150;
+  width: 280px;
+  /* Long workspaces scroll instead of running off the bottom of the window. */
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  background: hsl(var(--background));
+  box-shadow: var(--shadow-2);
+}
+
+.server-menu__heading {
+  padding: 6px 8px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: hsl(var(--muted-foreground));
+  /* The workspace name can be long; keep the heading on one line. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.server-menu__empty {
+  padding: 8px;
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.45;
+}
+
+.server-menu__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  color: hsl(var(--foreground));
+  text-align: left;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.server-menu__item:hover,
+.server-menu__item:focus-visible {
+  background: hsl(var(--muted));
+  border-color: transparent;
+}
+
+.server-menu__item--current {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.server-menu__item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.server-menu__item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.server-menu__item-when {
+  font-size: 11px;
+  font-weight: 400;
+  color: hsl(var(--muted-foreground));
+}
+
+/* New server / Workspace home: single-line rows below the separator. */
+.server-menu__item--action {
+  color: hsl(var(--muted-foreground));
+}
+
+.server-menu__item--action:hover {
+  color: hsl(var(--foreground));
+}
+
+/* Save failures land here because the dialog that triggered them is gone by
+   the time the error exists. Anchored to the trigger, not the toolbar flow, so
+   a long message never resizes the 64px header row. */
+.server-menu__error {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  z-index: 150;
+  width: 280px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid hsl(0 84% 60% / 0.35);
+  border-radius: 8px;
+  background: hsl(var(--background));
+  box-shadow: var(--shadow-2);
+  color: hsl(var(--destructive));
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Three actions instead of two, so the dialog needs room for "Save and
+   switch" beside "Discard changes" without wrapping the button row. */
+.confirm-dialog--switch {
+  width: min(480px, 100%);
+}
+
+/* ---------- title-bar search (reference "Search Here…" field) ---------- */
+
+.toolbar-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  padding: 0 9px;
+  height: 28px;
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  color: hsl(var(--muted-foreground));
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.toolbar-search:focus-within {
+  background: hsl(var(--background));
+  border-color: hsl(var(--ring));
+}
+
+.toolbar-search__icon {
+  flex: none;
+}
+
+.toolbar-search__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: hsl(var(--foreground));
+}
+
+.toolbar-search__input:focus-visible {
+  outline: none; /* the wrapper's focus-within border carries focus */
+}
+
+.toolbar-search__kbd {
+  flex: none;
+  padding: 1px 6px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 5px;
+  background: hsl(var(--background));
+  font-family: inherit;
+  font-size: 10.5px;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Results popup — floats below the field, above the canvas. */
+.search-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 40; /* above canvas chrome + floating detail panel */
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.search-hit {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.search-hit--active {
+  background: hsl(var(--sidebar-accent));
+}
+
+.search-hit__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0;
+}
+
+.search-hit__title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-hit__sub {
+  font-size: 11px;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-empty {
+  padding: 10px 8px;
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+}
+
+.file-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  color: hsl(var(--muted-foreground));
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dirty-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  flex: none;
+}
+
+.console-toggle.active {
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary));
+  background: hsl(273 63% 36% / 0.08);
+  font-weight: 600;
+}
+
+/* Icon-only code toggle: strip the default button chrome (border + padding
+   rectangle) so only the </> glyph shows; hover/active feedback comes from a
+   soft tint instead of the box. */
+.code-toggle {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-color: transparent;
+  background: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: hsl(var(--muted-foreground));
+}
+
+.code-toggle:hover {
+  background: hsl(var(--muted));
+  border-color: transparent;
+  color: hsl(var(--foreground));
+}
+
+.code-toggle.active {
+  /* Overrides .console-toggle.active: keep the primary tint but never the
+     rectangle border, matching the icon-only design. */
+  border-color: transparent;
+  color: hsl(var(--primary));
+  background: hsl(273 63% 36% / 0.08);
+}
+
+/* Toolbar shortcut that reuses a sidebar page icon. Those icons are authored
+   at width/height 1em with stroke-width 1.6 so each context can size them
+   (nav.tsx:14); font-size is what actually scales them here, and the stroke is
+   nudged to 1.8 to match the hand-drawn save and code glyphs beside it. */
+.toolbar-nav-btn {
+  font-size: 16px;
+}
+
+.toolbar-nav-btn svg {
+  stroke-width: 1.8;
+}
+
+/* Save button: reuses code-toggle dimensions/hover; disabled fades the icon
+   rather than hiding it so the toolbar layout doesn't shift. */
+.save-btn:disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.health {
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.health-bad {
+  color: hsl(var(--destructive));
+  background: hsl(0 84% 60% / 0.08);
+  border: 1px solid hsl(0 84% 60% / 0.35);
+}
+
+/* ---------- controls ---------- */
+
+button {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  cursor: pointer;
+  font: inherit;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+button:hover {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--border-strong));
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 1px;
+}
+
+button.primary {
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-weight: 600;
+}
+
+button.primary:hover {
+  background: hsl(273 63% 30%);
+}
+
+button.primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+input,
+select,
+textarea {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  padding: 6px 9px;
+  font: inherit;
+  transition: border-color 120ms ease;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: hsl(var(--border-strong));
+}
+
+textarea {
+  resize: vertical;
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+}
+
+label > input,
+label > select,
+label > textarea {
+  font-size: 13px;
+  color: hsl(var(--foreground));
+}
+
+label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+}
+
+/* Small square icon buttons (panel headers, drawer header, remove-input). */
+
+.panel-icon-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex: none;
+}
+
+.panel-icon-btn:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  border-color: transparent;
+}
+
+.panel-icon-btn.danger:hover {
+  color: hsl(var(--destructive));
+  background: hsl(0 84% 60% / 0.08);
+}
+
+/* ---------- layout ---------- */
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  position: relative; /* anchor for the floating detail panel */
+}
+
+.canvas-wrap {
+  flex: 1;
+  min-width: 0;
+  position: relative; /* anchor for the Advanced-mode code overlay */
+}
+
+/* Block creation now lives on each source connector. Removing the persistent
+   right rail gives the workflow the whole canvas and makes unattached adds
+   impossible through the visual UI. */
+
+/* Node glyphs stay monochrome like the reference. Semantic color belongs to
+   connections and status, not to the object icon itself. */
+
+.kind-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  flex: none;
+  color: hsl(var(--foreground) / 0.72);
+  background: hsl(var(--card));
+  font-size: 15px; /* sizes the 1em kind icon */
+}
+
+.chip-mcpRoot,
+.chip-tool,
+.chip-action,
+.chip-command,
+.chip-script,
+.chip-code,
+.chip-parallel,
+.chip-transform,
+.chip-return {
+  color: hsl(var(--foreground) / 0.72);
+  background: hsl(var(--card));
+}
+
+.chip-mcpRoot {
+  font-weight: 800;
+}
+
+/* ---------- canvas ---------- */
+
+.canvas-host {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.react-flow {
+  background: hsl(var(--background));
+}
+
+.react-flow__background {
+  color: hsl(270 12% 86%); /* subtle dot grid on the white canvas */
+}
+
+/* Reference-style workflow cards. Geometry must stay synchronized with the
+   fallback sizes in Canvas.tsx so orthogonal edges are correct on first paint. */
+
+.block-card {
+  --node-accent: var(--kind-tool);
+  position: relative;
+  width: 232px;
+  height: 92px;
+  padding: 9px 10px;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  box-shadow: none;
+  cursor: grab;
+  transition: border-color 150ms ease, outline-color 150ms ease;
+}
+
+.block-card:hover {
+  border-color: hsl(var(--border-strong));
+  box-shadow: none;
+}
+
+.block-card:active {
+  cursor: grabbing;
+}
+
+.block-card--mcpRoot {
+  --node-accent: var(--kind-tool);
+  width: 232px;
+  height: 76px;
+  background: hsl(var(--background));
+}
+
+/* Server metadata belongs in the click-through properties panel. With only
+   identity on the canvas, center the row instead of leaving title-only content
+   aligned to the old three-line layout. */
+.block-card--mcpRoot .block-card__header {
+  height: 100%;
+}
+
+.block-card--tool { --node-accent: var(--kind-tool); }
+.block-card--action { --node-accent: var(--kind-action); }
+.block-card--command,
+.block-card--script,
+.block-card--code { --node-accent: var(--kind-action); }
+.block-card--parallel,
+.block-card--transform { --node-accent: var(--kind-transform); }
+.block-card--return { --node-accent: var(--kind-return); }
+
+/* Selection is an outline rather than another shadow; a shadow on the left
+   edge made cards look raised while the reference panels are deliberately flat. */
+.block-card--selected {
+  border-color: hsl(var(--ring) / 0.55);
+  outline: 2px solid hsl(var(--ring) / 0.16);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+.block-card__header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+}
+
+.block-card__chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 7px;
+  flex: none;
+  color: hsl(var(--foreground) / 0.72);
+  background: hsl(var(--background));
+  font-size: 16px;
+}
+
+.block-card--mcpRoot .block-card__chip {
+  color: hsl(var(--foreground) / 0.72);
+  border-color: hsl(var(--border));
+  background: hsl(var(--card));
+}
+
+.block-card__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.block-card__title {
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.block-card__sub,
+.block-card__meta {
+  color: hsl(var(--muted-foreground));
+  font-size: 10.5px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.block-card__meta {
+  font-size: 9.5px;
+}
+
+.block-card__drag {
+  display: inline-flex;
+  align-items: center;
+  color: hsl(var(--muted-foreground) / 0.65);
+  flex: none;
+}
+
+.block-card__metrics {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+  overflow: hidden;
+}
+
+/* The reference uses compact icon/value counters rather than prose inside
+   each chip. Full labels remain available through title and aria-label. */
+.block-card__metric {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 23px;
+  min-width: 42px;
+  padding: 0 6px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  color: hsl(var(--muted-foreground));
+  background: transparent;
+  white-space: nowrap;
+}
+
+.block-card__metric svg {
+  flex: none;
+}
+
+.block-card__metric strong {
+  color: hsl(var(--foreground));
+  font-size: 10.5px;
+  font-weight: 650;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.block-card__metric--ok { border-color: hsl(var(--ok) / 0.45); color: hsl(var(--ok)); }
+.block-card__metric--warn { border-color: hsl(var(--warning) / 0.5); color: hsl(var(--warning)); }
+.block-card__metric--danger { border-color: hsl(var(--destructive) / 0.5); color: hsl(var(--destructive)); }
+
+.block-card__badge {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 2px solid hsl(var(--background));
+  border-radius: 10px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.block-card__badge--error { background: hsl(var(--destructive)); }
+.block-card__badge--warn { background: hsl(var(--warning)); }
+
+/* React Flow endpoints use the same filled-dot grammar as the reference. */
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: var(--node-accent, hsl(var(--primary)));
+  border: 0;
+  box-shadow: none;
+  transition: transform 100ms ease;
+}
+
+.react-flow__handle-top:hover {
+  transform: translate(-50%, -50%) scale(1.12);
+}
+
+.react-flow__handle-bottom:hover {
+  transform: translate(-50%, 50%) scale(1.12);
+}
+
+.react-flow__handle.node-source-anchor {
+  width: 8px;
+  height: 8px;
+}
+
+/* The add affordance is intentionally not a React Flow handle. Separating it
+   from the small routing dot keeps the plus mathematically centered and avoids
+   the large outlined circle that obscured the connector endpoint. */
+.node-add-trigger,
+.node-add-trigger:hover {
+  position: absolute;
+  left: 50%;
+  bottom: -27px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--node-accent, hsl(var(--primary)));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none;
+  transform: translateX(-50%);
+  z-index: 6;
+}
+
+.node-add-trigger::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 1px);
+  width: 1.5px;
+  height: 9px;
+  background: var(--node-accent, hsl(var(--primary)));
+  transform: translateX(-50%);
+}
+
+.node-add-trigger svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.node-add-trigger:hover {
+  color: hsl(var(--foreground));
+  transform: translateX(-50%) scale(1.1);
+}
+
+.node-add-trigger:focus-visible {
+  outline: 2px solid hsl(var(--ring) / 0.45);
+  outline-offset: 1px;
+}
+
+.react-flow__node {
+  z-index: 1;
+}
+
+.react-flow__node:has(.node-picker) {
+  z-index: 40 !important;
+}
+
+.node-picker {
+  position: absolute;
+  top: calc(100% + 32px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  width: 230px;
+  padding: 6px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  background: hsl(var(--background));
+  box-shadow: var(--shadow-2);
+}
+
+.node-picker__heading {
+  padding: 4px 7px 7px;
+  color: hsl(var(--muted-foreground));
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.node-picker__option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px;
+  border: 0;
+  text-align: left;
+  background: transparent;
+}
+
+.node-picker__option > span:last-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.node-picker__option strong {
+  font-size: 12px;
+}
+
+.node-picker__option small {
+  color: hsl(var(--muted-foreground));
+  font-size: 10.5px;
+}
+
+/* Edge pills sit in the portal layer, so they stay crisp while cards and SVG
+   paths pan underneath. Labels are presentation-only and never intercept input. */
+.edge-label {
+  position: absolute;
+  z-index: 3;
+  padding: 4px 10px;
+  border: 1px solid var(--runtime-edge-normal);
+  border-radius: 999px;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  box-shadow: none;
+  font-size: 10px;
+  font-weight: 550;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.edge-label--first-seen { border-color: var(--runtime-edge-first-seen); }
+.edge-label--risky { border-color: var(--runtime-edge-risky); }
+.edge-label--internet { border-color: var(--runtime-edge-internet); }
+.edge-label--selected { box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring) / 0.2); }
+
+/* CSS offset-path is motion-reducible; SMIL was not reliably paused by the
+   app's accessibility preference in Chromium. */
+.flow-dot {
+  offset-rotate: 0deg;
+  animation: flow-move 1.8s linear infinite;
+}
+
+@keyframes flow-move {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+/* ---------- zoom controls + legend (bottom-left overlay) ---------- */
+
+.zoom-controls {
+  position: absolute;
+  bottom: 24px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+}
+
+.zoom-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  background: hsl(var(--background));
+  font-size: 16px;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.zoom-btn:hover {
+  background: hsl(var(--muted));
+}
+
+/* ---------- layout picker popover ---------- */
+
+.layout-picker-wrap {
+  position: relative;
+}
+
+.layout-popover {
+  position: absolute;
+  left: 40px;
+  bottom: 0;
+  width: 220px;
+  padding: 4px;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 30;
+}
+
+.layout-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  text-align: left;
+}
+
+.layout-option:hover {
+  background: hsl(var(--muted));
+}
+
+.layout-option svg {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+}
+
+.legend-card {
+  margin-top: 4px;
+  width: 32px;
+  padding: 8px 0;
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  background: hsl(var(--background));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-row {
+  display: flex;
+}
+
+.legend-line {
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+/* ---------- docked detail side-panel (right) ----------
+   Full-height flex sibling of .canvas-wrap — not a floating overlay.
+   Sits inside the .body flex row so it gets its height from the layout
+   rather than absolute positioning, which avoids overlap and z-index
+   issues with the canvas and its overlays. */
+
+.detail-panel {
+  width: 340px;
+  flex: none;
+  background: hsl(var(--background));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid hsl(var(--border));
+}
+
+.detail-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid hsl(var(--muted));
+}
+
+.detail-panel__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  color: hsl(var(--foreground));
+  min-width: 0;
+}
+
+.detail-panel__icon {
+  width: 28px;
+  height: 28px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 7px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--foreground) / 0.72);
+  background: hsl(var(--card));
+  font-size: 15px; /* sizes the 1em kind icon */
+}
+
+.detail-panel__icon--server {
+  color: hsl(var(--foreground) / 0.72);
+  background: hsl(var(--card));
+}
+
+.detail-panel__titletext {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-panel__actions {
+  display: flex;
+  gap: 2px;
+  flex: none;
+}
+
+.detail-panel__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.detail-panel__body h3,
+.console-form h3 {
+  margin: 10px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: hsl(var(--muted-foreground));
+}
+
+.detail-panel__footer {
+  padding: 12px 16px;
+  border-top: 1px solid hsl(var(--muted));
+  display: flex;
+  gap: 8px;
+}
+
+.panel-action-btn {
+  flex: 1;
+  padding: 8px 0;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  background: hsl(var(--background));
+  font-size: 13px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.panel-action-btn:hover {
+  background: hsl(var(--muted));
+}
+
+.panel-action-btn--danger {
+  color: hsl(var(--destructive));
+}
+
+.panel-action-btn--danger:hover {
+  border-color: hsl(var(--destructive));
+  background: hsl(0 84% 60% / 0.06);
+}
+
+.input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  border-radius: var(--radius);
+  padding: 10px;
+}
+
+.input-row-head {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.input-row-head input:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.local-code-editor {
+  min-height: 250px;
+  tab-size: 2;
+}
+
+/* ---------- custom-code block: inline preview + overlay editor ---------- */
+
+/* The node panel is 340px wide, which is too narrow to write real code in.
+   It therefore shows a READ-ONLY preview that opens the overlay, rather than
+   a cramped editing field that invites typing into a 340px column. */
+.code-open-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: hsl(var(--foreground));
+}
+
+.code-open-btn__label {
+  font-weight: 600;
+}
+
+.code-open-btn__hint {
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+}
+
+.code-preview {
+  margin: 0;
+  padding: 9px 11px;
+  max-height: 150px;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  background: hsl(var(--card));
+  color: hsl(var(--muted-foreground));
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre;
+  cursor: pointer;
+}
+
+.code-preview:hover {
+  border-color: hsl(var(--border-strong));
+}
+
+/* Modal overlay. z-index 200 matches .modal-backdrop: this is a peer of the
+   help/confirm dialogs, so it must cover the title bar (z-index 100) for the
+   same reason they do — a modal that leaves chrome clickable is not modal. */
+.code-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: hsl(270 25% 8% / 0.28);
+  backdrop-filter: blur(2px);
+}
+
+.code-overlay {
+  /* Deliberately large: the user's complaint was that the old field was too
+     small to write code in. Caps keep it inside the window on a laptop. */
+  width: min(1100px, 100%);
+  height: min(760px, 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  background: hsl(var(--background));
+  box-shadow: var(--shadow-2);
+}
+
+.code-overlay__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px 10px 16px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.code-overlay__titlegroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.code-overlay__title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.code-overlay__language {
+  /* label defaults to a column with a gap; this one is a single inline
+     control, so reset to a row to keep the header on one line. */
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+}
+
+.code-overlay__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.code-overlay__meta {
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+}
+
+.code-overlay__toggle {
+  padding: 3px 10px;
+  font-size: 11.5px;
+  color: hsl(var(--muted-foreground));
+}
+
+.code-overlay__toggle--on {
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary));
+  background: hsl(273 63% 36% / 0.08);
+  font-weight: 600;
+}
+
+.code-overlay__notice {
+  margin: 10px 14px 0;
+}
+
+/* Same two-layer technique and the same metrics contract as the Graph JSON
+   panel (see .code-panel__editor-wrap): a colored <pre> behind a textarea
+   whose text is transparent. If the two layers' font, padding or wrapping
+   ever differ, the colors slide off the glyphs. Change them together. */
+.code-overlay__editor-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.code-overlay__highlight,
+.code-overlay__editor-wrap > .code-overlay__editor {
+  /* Shared metrics contract (see comment above). */
+  margin: 0;
+  padding: 14px 18px;
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  tab-size: 2;
+  /* Default is NO wrapping: wrapped code misleads about line structure, and
+     a horizontal scrollbar is what a code editor normally does. The Wrap
+     toggle overrides both layers together below. */
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+.code-overlay__editor-wrap--wrap .code-overlay__highlight,
+.code-overlay__editor-wrap--wrap > .code-overlay__editor {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.code-overlay__highlight {
+  position: absolute;
+  inset: 0;
+  overflow: hidden; /* scroll position is driven from the textarea's */
+  color: hsl(var(--foreground));
+  pointer-events: none;
+}
+
+.code-overlay__editor-wrap > .code-overlay__editor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: transparent; /* glyphs come from the highlight layer behind */
+  caret-color: hsl(var(--foreground));
+  overflow: auto;
+}
+
+.code-overlay__editor-wrap > .code-overlay__editor::selection {
+  /* Text is transparent, so give selection a visible tint of its own. */
+  background: hsl(var(--primary) / 0.25);
+}
+
+.code-overlay__editor-wrap > .code-overlay__editor:focus-visible {
+  outline: none; /* a ring around the whole editor area reads as a glitch */
+}
+
+.code-overlay__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+/* Accessible label that is visually hidden — the select's purpose is obvious
+   in context but a screen reader still needs the name. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.parallel-add-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.parallel-add-grid button {
+  padding-inline: 7px;
+  font-size: 11px;
+}
+
+/* ---------- {{var}} helper chips ---------- */
+
+.tpl-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tpl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tpl-chip {
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 10.5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  line-height: 1.6;
+}
+
+.tpl-chip--input {
+  color: var(--kind-tool);
+  background: rgba(98, 34, 150, 0.08);
+  border: 1px solid rgba(98, 34, 150, 0.3);
+}
+
+.tpl-chip--input:hover {
+  background: rgba(98, 34, 150, 0.16);
+  border-color: var(--kind-tool);
+}
+
+.tpl-chip--env {
+  color: #1f776e;
+  background: rgba(45, 159, 148, 0.08);
+  border: 1px solid rgba(45, 159, 148, 0.35);
+}
+
+.tpl-chip--env:hover {
+  background: rgba(45, 159, 148, 0.16);
+  border-color: #2d9f94;
+}
+
+.tpl-chip--prev {
+  color: #8a6410;
+  background: rgba(217, 163, 38, 0.1);
+  border: 1px solid rgba(217, 163, 38, 0.4);
+}
+
+.tpl-chip--prev:hover {
+  background: rgba(217, 163, 38, 0.2);
+  border-color: var(--kind-transform);
+}
+
+/* ---------- problems / load error ---------- */
+
+.problem {
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  white-space: pre-wrap;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.problem-error {
+  background: hsl(0 84% 60% / 0.07);
+  border: 1px solid hsl(0 84% 60% / 0.4);
+}
+
+.problem-warning {
+  background: hsl(39 85% 45% / 0.08);
+  border: 1px solid hsl(39 85% 45% / 0.4);
+}
+
+.load-error {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  background: hsl(0 84% 60% / 0.07);
+  border-bottom: 1px solid hsl(var(--destructive));
+  padding: 8px 14px;
+}
+
+.load-error pre {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* Onboarding stays recoverable after dismissal. Pointer events land only on
+   the card so an open guide does not disable panning elsewhere on the canvas. */
+
+.canvas-help {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.canvas-help-card {
+  position: relative;
+  pointer-events: auto;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+  padding: 26px 30px;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: var(--shadow-2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.canvas-help-card h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.canvas-help-card p {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.55;
+}
+
+.canvas-help-card strong {
+  color: hsl(var(--foreground));
+}
+
+.canvas-help-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.canvas-help-button {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 15;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  border-color: hsl(var(--border));
+  background: hsl(var(--background));
+  color: hsl(var(--primary));
+  box-shadow: var(--shadow-1);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.mcp-tool-preview {
+  margin-top: 4px;
+}
+
+.mcp-tool-preview pre {
+  white-space: pre-wrap;
+}
+
+/* ---------- Advanced mode (</> Code overlay) ---------- */
+
+.code-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  /* Opaque: hides the canvas underneath; the code sits directly on the
+     app background with no card frame (user decision: frameless). */
+  background: hsl(var(--background));
+}
+
+.code-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 14px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.code-panel__tabs {
+  display: inline-flex;
+  gap: 2px;
+  background: hsl(var(--muted));
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.code-tab {
+  border: none;
+  background: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+.code-tab--active {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  box-shadow: var(--shadow-1);
+  font-weight: 600;
+}
+
+.code-panel__actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.code-panel__error {
+  margin: 8px 14px 0;
+}
+
+/* Editable JSON with highlighting: a colored <pre> behind a textarea whose
+   text is transparent (caret stays visible). BOTH layers must share the
+   exact same font metrics, padding and wrapping — any mismatch and the
+   colors drift off the glyphs, which reads as broken. Change them together.
+   Frameless (user decision): no card/border — the code sits directly on
+   the app background, like a full-bleed editor. */
+.code-panel__editor-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.code-panel__highlight,
+.code-panel__editor-wrap > .code-panel__editor {
+  /* Shared metrics contract (see comment above). */
+  margin: 0;
+  padding: 14px 18px;
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  tab-size: 2;
+  white-space: pre-wrap;
+  word-break: break-word; /* mirror textarea soft-wrap of long tokens */
+}
+
+.code-panel__highlight {
+  position: absolute;
+  inset: 0;
+  overflow: hidden; /* scroll position is driven from the textarea's */
+  color: hsl(var(--foreground));
+  pointer-events: none;
+}
+
+.code-panel__editor-wrap > .code-panel__editor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: transparent; /* glyphs come from the highlight layer behind */
+  caret-color: hsl(var(--foreground));
+}
+
+.code-panel__editor-wrap > .code-panel__editor::selection {
+  /* Text is transparent, so give selection a visible tint of its own. */
+  background: hsl(var(--primary) / 0.25);
+}
+
+.code-panel__editor-wrap > .code-panel__editor:focus-visible {
+  outline: none; /* frameless surface — a focus ring here would draw a box
+                    around the whole editor area, which reads as a glitch */
+}
+
+.code-panel__preview {
+  /* Frameless like the JSON editor: code directly on the background. */
+  flex: 1;
+  margin: 0;
+  padding: 14px 18px;
+  overflow: auto;
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* Syntax token palette — VS Code's default themes (Light+ / Dark+ token
+   colors from microsoft/vscode extensions/theme-defaults), so the code
+   views read exactly like the editor developers stare at all day.
+   Light: strings #a31515, keys/props #0451a5, numbers #098658 ... */
+.tok-key {
+  color: #0451a5;
+}
+.tok-string {
+  color: #a31515;
+}
+.tok-number {
+  color: #098658;
+}
+.tok-keyword {
+  color: #0000ff;
+}
+.tok-control {
+  color: #af00db;
+}
+.tok-comment {
+  color: #008000;
+}
+.tok-function {
+  color: #795e26;
+}
+.tok-type {
+  color: #267f99;
+}
+.tok-variable {
+  color: #001080;
+}
+
+/* Dark+ equivalents on the Midnight theme. */
+:root[data-theme="dark"] .tok-key {
+  color: #9cdcfe;
+}
+:root[data-theme="dark"] .tok-string {
+  color: #ce9178;
+}
+:root[data-theme="dark"] .tok-number {
+  color: #b5cea8;
+}
+:root[data-theme="dark"] .tok-keyword {
+  color: #569cd6;
+}
+:root[data-theme="dark"] .tok-control {
+  color: #c586c0;
+}
+:root[data-theme="dark"] .tok-comment {
+  color: #6a9955;
+}
+:root[data-theme="dark"] .tok-function {
+  color: #dcdcaa;
+}
+:root[data-theme="dark"] .tok-type {
+  color: #4ec9b0;
+}
+:root[data-theme="dark"] .tok-variable {
+  color: #9cdcfe;
+}
+
+/* ---------- test console (bottom drawer) ---------- */
+
+.console-drawer {
+  /* Default height only — App.tsx drives the real value inline so the
+     drawer is drag-resizable; keep the two defaults in sync. */
+  height: 300px;
+  flex: none;
+  position: relative; /* anchor for the top-edge resize handle */
+  background: hsl(var(--background));
+  border-top: 1px solid hsl(var(--border));
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -4px 16px rgba(39, 6, 66, 0.05);
+}
+
+/* Invisible grab strip straddling the drawer's top border. Overlaid
+   (absolute) rather than in-flow so it widens the hit target without
+   moving the header down; the negative top half extends over the canvas
+   edge, which is standard for dock resize handles. */
+.console-drawer__resize {
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: ns-resize;
+  touch-action: none; /* required so pointer capture drags work on touch */
+  z-index: 3;
+}
+
+.console-drawer__resize:hover {
+  /* Subtle affordance: tint the strip with the brand primary on hover. */
+  background: hsl(273 63% 36% / 0.25);
+}
+
+/* Minimized console: a slim full-width bar docked at the bottom of the
+   builder. It replaces the drawer entirely (the two states are exclusive in
+   App.tsx), so it must stay visually quiet but recognizably clickable. */
+.console-minibar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  border-radius: 0;
+  background: hsl(var(--background));
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.console-minibar:hover {
+  color: hsl(var(--primary));
+  background: hsl(273 63% 36% / 0.05);
+}
+
+.console-minibar__icon {
+  font-size: 11px;
+}
+
+.console-minibar__chevron {
+  margin-left: auto;
+  font-size: 11px;
+}
+
+.console-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px 7px;
+  border-bottom: 1px solid hsl(var(--muted));
+}
+
+.console-drawer__title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.console-body {
+  flex: 1;
+  min-height: 0;
+  padding: 12px 16px;
+  overflow-y: auto;
+}
+
+.console-body--split {
+  display: flex;
+  /* No gap: the form's right border is the divider between the two panes,
+     and each pane carries its own 16px inner padding. */
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.console-form {
+  width: 380px;
+  flex: none;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Vertical divider separating input (left) from output (right). */
+  border-right: 1px solid hsl(var(--border));
+}
+
+.console-runs {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Runs are flat entries in the console itself — no card box. Entries are
+   separated by a horizontal rule; the last one drops its rule so the list
+   doesn't end on a dangling line. */
+.run-entry {
+  padding: 0 0 12px;
+  border-bottom: 1px solid hsl(var(--border));
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.run-entry + .run-entry {
+  padding-top: 12px;
+}
+
+.run-entry:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.run-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.run-head code {
+  word-break: break-all;
+  font-size: 12px;
+}
+
+/* Output renders flat in the console — no card background/box. The entry's
+   horizontal rule (above) is the only separation between runs. */
+.run-result pre {
+  margin: 0;
+  padding: 0;
+  background: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 260px;
+  overflow: auto;
+  font-size: 12px;
+}
+
+/* Errors keep a flat accent (red edge) instead of the old bordered box. */
+.run-error pre {
+  border-left: 2px solid hsl(0 84% 60% / 0.6);
+  padding-left: 8px;
+}
+
+.run-flag {
+  color: hsl(var(--destructive));
+  font-weight: 600;
+}
+
+.schema-preview pre {
+  background: hsl(var(--card));
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  overflow: auto;
+  max-height: 240px;
+  font-size: 12px;
+}
+
+details summary {
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+}
+
+details summary:hover {
+  color: hsl(var(--foreground));
+}
+
+/* Custom scrollbars to match the light chrome (WebKit = Electron's engine). */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border-strong));
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(270 10% 68%);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Reduced motion: stop micro-transitions AND the flow dots. CSS animations
+   (unlike the old SMIL particles) are cancelable here — that is one reason
+   TrafficEdge uses offset-path. A frozen dot at the path start would read
+   as a stuck request, so hide it entirely. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+
+  .flow-dot {
+    animation: none;
+    visibility: hidden;
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@mcpeasy/engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Runtime that serves a graph doc as a real MCP server (in-memory, stdio, HTTP).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@mcpeasy/schema": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.5.4"
+  }
+}

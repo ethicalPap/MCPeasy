@@ -1,0 +1,15 @@
+{
+  "name": "@mcpeasy/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "mcpeasy command line: run graph docs as MCP servers, lint them.",
+  "bin": {
+    "mcpeasy": "./src/main.ts"
+  },
+  "dependencies": {
+    "@mcpeasy/engine": "workspace:*",
+    "@mcpeasy/schema": "workspace:*",
+    "commander": "^15.0.0"
+  }
+}

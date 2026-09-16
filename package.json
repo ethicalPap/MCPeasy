@@ -1,0 +1,24 @@
+{
+  "name": "mcpeasy",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Visual MCP server builder - phase 0: graph schema, runtime engine, CLI",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json && tsc -p apps/desktop/tsconfig.node.json && tsc -p apps/desktop/tsconfig.web.json",
+    "mcpeasy": "tsx apps/cli/src/main.ts",
+    "ui": "pnpm --filter @mcpeasy/desktop dev"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@types/node": "^26.4.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "server": {
+    "name": "echo-server",
+    "version": "0.1.0",
+    "transport": "stdio",
+    "auth": { "type": "none" },
+    "env": []
+  },
+  "nodes": {
+    "tool_echo": {
+      "kind": "tool",
+      "name": "echo_message",
+      "description": "Echo a message back verbatim. Use when you want to verify the server round trip works.",
+      "inputs": [
+        { "name": "message", "type": "string", "description": "The text to echo back" }
+      ],
+      "annotations": { "readOnly": true },
+      "entry": "return_echo"
+    },
+    "return_echo": {
+      "kind": "return",
+      "format": "text",
+      "template": "echo: {{input.message}}"
+    }
+  },
+  "edges": [
+    { "id": "e1", "source": "tool_echo", "target": "return_echo" }
+  ],
+  "layout": {
+    "tool_echo": { "x": 80, "y": 80 },
+    "return_echo": { "x": 80, "y": 240 }
+  }
+}

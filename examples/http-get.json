@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "server": {
+    "name": "todo-lookup",
+    "version": "0.1.0",
+    "transport": "stdio",
+    "auth": { "type": "none" },
+    "env": ["BASE_URL"]
+  },
+  "nodes": {
+    "tool_get_todo": {
+      "kind": "tool",
+      "name": "get_todo",
+      "description": "Fetch a single todo item by its numeric id. Use when the user asks about a specific todo.",
+      "inputs": [
+        { "name": "id", "type": "string", "description": "Numeric id of the todo item" }
+      ],
+      "annotations": { "readOnly": true },
+      "entry": "fetch_todo"
+    },
+    "fetch_todo": {
+      "kind": "action",
+      "http": {
+        "method": "GET",
+        "url": "{{env.BASE_URL}}/todos/{{input.id}}"
+      },
+      "next": "shape_todo"
+    },
+    "shape_todo": {
+      "kind": "transform",
+      "op": "pick",
+      "pick": ["id", "title", "completed"],
+      "next": "return_todo"
+    },
+    "return_todo": {
+      "kind": "return",
+      "format": "json"
+    }
+  },
+  "edges": [
+    { "id": "e1", "source": "tool_get_todo", "target": "fetch_todo" },
+    { "id": "e2", "source": "fetch_todo", "target": "shape_todo" },
+    { "id": "e3", "source": "shape_todo", "target": "return_todo" }
+  ],
+  "layout": {
+    "tool_get_todo": { "x": 80, "y": 80 },
+    "fetch_todo": { "x": 80, "y": 240 },
+    "shape_todo": { "x": 80, "y": 400 },
+    "return_todo": { "x": 80, "y": 560 }
+  }
+}

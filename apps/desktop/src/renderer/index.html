@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MCPeasy</title>
+    <!-- CSP mirrors the official create-electron react-ts template: everything
+         is local ('self'); style 'unsafe-inline' is required by React Flow's
+         injected inline styles. No remote origins — the editor is fully
+         offline; only the MAIN process ever talks to the network. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+packages:
+  - packages/*
+  - apps/*
+# pnpm blocks dependency lifecycle scripts by default (supply-chain hardening).
+# esbuild's postinstall only unpacks the prebuilt binary for the current platform;
+# without it, running esbuild fails with "could not find esbuild binary".
+# pnpm v11 replaced `onlyBuiltDependencies` with the `allowBuilds` map
+# (https://pnpm.io/settings/build#allowbuilds) — the old key is silently ignored,
+# which made every `pnpm install` fail with ERR_PNPM_IGNORED_BUILDS.
+# Keep this list minimal — every entry here is code that runs on `pnpm install`.
+allowBuilds:
+  esbuild: true
+  # electron's postinstall downloads the platform binary via @electron/get;
+  # without approval the app cannot launch ("Electron failed to install").
+  electron: true

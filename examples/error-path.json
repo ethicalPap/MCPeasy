@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "server": {
+    "name": "error-demo",
+    "version": "0.1.0",
+    "transport": "stdio",
+    "auth": { "type": "none" },
+    "env": ["BASE_URL"]
+  },
+  "nodes": {
+    "tool_fail": {
+      "kind": "tool",
+      "name": "get_missing_resource",
+      "description": "Deliberately fetch a nonexistent path to exercise the error path. Use when testing failures.",
+      "inputs": [],
+      "annotations": { "readOnly": true },
+      "entry": "fetch_missing"
+    },
+    "fetch_missing": {
+      "kind": "action",
+      "http": {
+        "method": "GET",
+        "url": "{{env.BASE_URL}}/definitely-not-a-real-path-404"
+      },
+      "next": "return_result"
+    },
+    "return_result": {
+      "kind": "return",
+      "format": "json"
+    }
+  },
+  "edges": [
+    { "id": "e1", "source": "tool_fail", "target": "fetch_missing" },
+    { "id": "e2", "source": "fetch_missing", "target": "return_result" }
+  ]
+}

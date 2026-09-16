@@ -1,0 +1,28 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+    // Renderer may import SCHEMA only (pure zod). The engine is deliberately
+    // absent from paths so a value-import of it fails typecheck loudly rather
+    // than dragging Node-only SDK transports into the browser bundle.
+    "paths": {
+      "@mcpeasy/schema": ["../../packages/schema/src/index.ts"]
+    }
+  },
+  "include": [
+    "src/renderer/src/**/*.ts",
+    "src/renderer/src/**/*.tsx",
+    "src/shared/**/*.ts",
+    "test/browserLibrary.test.ts",
+    "test/codegen.test.ts",
+    "test/export.test.ts",
+    "test/graph.test.ts",
+    "test/highlight.test.ts",
+    "test/templateVars.test.ts",
+    "test/theme.test.ts"
+  ]
+}
