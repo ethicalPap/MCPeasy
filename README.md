@@ -9,6 +9,21 @@ MCPeasy ships as a **packaged desktop app**. Install it, build a server on the
 canvas, and connect it to an MCP client from the Integrations page — no
 toolchain, no terminal, no repo checkout required.
 
+## What it looks like
+
+![The MCPeasy canvas: a server node connected to two tool nodes, each running an HTTP request and returning JSON](assets/canvas.png)
+
+A server is a graph. The server node fans out to its tools along **Expose tool**
+links; each tool runs its chain downward — here an HTTP request, then a JSON
+reply to the model. Each node shows its own summary badges — a tool's input
+count and `Read`/`Write` access, an action's method and whether a target URL is
+set — ending in a health badge that reads **Ready** only when that node has no
+lint errors or warnings.
+
+The links you drag are editor rendering only. Execution follows
+`tool.entry` → `node.next`, which is why a tidy-looking canvas can still be
+wrong and the lint rules matter.
+
 ## Layout
 
 | Path | What |
@@ -18,6 +33,24 @@ toolchain, no terminal, no repo checkout required.
 | `apps/desktop` | The Electron app: React Flow canvas, properties panel, test console, secrets, Integrations, and headless `--mcp-serve` mode. |
 | `apps/cli` | `mcpeasy dev <graph.json>` (stdio server), `mcpeasy lint <graph.json>`. |
 | `examples/` | Graph docs usable as starting points. |
+
+## Test before you connect
+
+![The test console showing a get_example call, the raw response body, and the expanded input schema](assets/test-console.png)
+
+The test console runs the tool through the **same engine** that serves it over
+stdio and HTTP, so a result here is the result a model gets — not an
+approximation. Pick a tool, supply inputs, run it.
+
+Two details are worth more than they look. The response pane shows the raw
+content the model receives, so an upstream page that returns HTML instead of
+JSON is visible immediately rather than at connect time. And **Input schema as
+the model sees it** expands the exact JSON Schema projected from the tool's
+inputs — including `additionalProperties: false`, which MCPeasy always emits so
+a model cannot smuggle undeclared fields into a request.
+
+Secrets typed into this panel are used for that run only and are never written
+to the graph doc.
 
 ## Connect to Claude Code (from the desktop app)
 
@@ -30,6 +63,19 @@ until that name matches. Start or restart the client to load the server.
 Connecting is the only action on that page that writes outside the workspace,
 which is why it asks for the same deliberate confirmation as deleting a server.
 
+![Claude Code's /mcp view listing the connected server and its two tools, each marked read-only](assets/claude-code.png)
+
+Run `/mcp` in Claude Code to confirm it worked. The entry appears under a
+generated name — `mcpeasy-<project>-<server>`, built by `entryNameFor()` in
+`apps/desktop/src/main/claudeCode.ts` — and that `mcpeasy-` prefix is load
+bearing: it is how MCPeasy recognises its own entries and avoids overwriting a
+server you registered by hand.
+
+Each tool carries the **read-only** annotation from its node, forwarded as the
+MCP `readOnlyHint`. Clients use it to decide what needs a human in the loop, so
+a tool that writes must not be left marked read-only — a lint rule flags the
+common case where a `get_`/`list_` name disagrees with the annotation.
+
 The registered entry launches **MCPeasy itself in headless serve mode**, not
 the CLI. That is what keeps secrets out of the config file: Claude Code's
 `${VAR}` expansion resolves from its own environment with no keychain
@@ -37,10 +83,12 @@ indirection, so the launched process resolves declared env values from the
 encrypted project store instead. The entry holds only a project id and a file
 path.
 
-The page blocks the connect and says why when the server is unsaved, has lint
-or validation errors, or declares an env var with no stored secret. See
-[`docs/integrations-claude-code.md`](docs/integrations-claude-code.md) for the
-citation-backed contract this implements against.
+The page blocks the connect and says why when the file cannot be read as a
+server document, when it is open in the builder with unsaved changes, when it
+declares an env var with no stored secret, or when it uses the `http` transport
+(which listens on a port rather than being launched by the client). Lint
+warnings do not block a connect — they are advice, and the canvas is where you
+see them.
 
 ## Try it in Claude Desktop (still manual)
 
