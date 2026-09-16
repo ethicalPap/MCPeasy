@@ -5,6 +5,10 @@ out/
 # electron-builder.yml sets directories.output to this.
 release/
 coverage/
+# Scratch renders from scripts/make-icon.mjs design loops. The real icon is the
+# committed apps/desktop/build/icon.ico; these underscore-prefixed previews are
+# throwaway visual checks and two of them were accidentally committed once.
+_icon*.png
 *.tsbuildinfo
 *.log
 .env
