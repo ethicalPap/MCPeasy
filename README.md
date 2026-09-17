@@ -11,10 +11,7 @@ toolchain, no terminal, no repo checkout required.
 
 ## The canvas
 
-<!-- Screenshot hidden: assets/canvas.png is not in the repo yet. To restore it,
-     save that file, then delete this line and the closing marker below.
 ![The MCPeasy canvas: a server node connected to two tool nodes, each running an HTTP request and returning JSON](assets/canvas.png)
--->
 
 A server is a graph. The server node fans out to its tools along **Expose tool**
 links; each tool runs its chain downward — typically an HTTP request, then a
@@ -69,10 +66,7 @@ until that name matches. Start or restart the client to load the server.
 Connecting is the only action on that page that writes outside the workspace,
 which is why it asks for the same deliberate confirmation as deleting a server.
 
-<!-- Screenshot hidden: assets/claude-code.png is not in the repo yet. To restore
-     it, save that file, then delete this line and the closing marker below.
 ![Claude Code's /mcp view listing the connected server and its two tools, each marked read-only](assets/claude-code.png)
--->
 
 Run `/mcp` in Claude Code to confirm it worked. The entry appears under a
 generated name — `mcpeasy-<project>-<server>`, built by `entryNameFor()` in

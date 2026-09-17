@@ -13,4 +13,24 @@ allowBuilds:
   # electron's postinstall downloads the platform binary via @electron/get;
   # without approval the app cannot launch ("Electron failed to install").
   electron: true
-  electron-winstaller: set this to true or false
+  # DENIED on purpose, and this is a real decision rather than a leftover.
+  #
+  # electron-winstaller is pulled in transitively by electron-builder, via the
+  # required `electron-builder-squirrel-windows` peer of app-builder-lib. Its
+  # install script (script/select-7z-arch.js) only copies vendor/7z-<arch>.exe
+  # and .dll into place so SQUIRREL can build a package. We target NSIS
+  # exclusively (apps/desktop/electron-builder.yml -> win.target: nsis), so
+  # that 7-Zip copy is never read.
+  #
+  # Proof rather than reasoning: the shipped v0.1.0 installer
+  # (MCPeasy-0.1.0-setup.exe, tag v0.1.0) was built with this script unrun,
+  # because it was still unapproved at the time.
+  #
+  # `false` is not the same as leaving it unlisted. Unlisted means "nobody has
+  # ruled on this", which under pnpm's default strictDepBuilds:true aborts
+  # EVERY install with ERR_PNPM_IGNORED_BUILDS — and since the root `ui` script
+  # shells out to pnpm, that broke `pnpm ui` too. An explicit false records the
+  # decision and lets installs proceed.
+  #
+  # Revisit only if a squirrel target is ever added to electron-builder.yml.
+  electron-winstaller: false
